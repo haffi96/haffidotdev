@@ -1,0 +1,19 @@
+{
+  "name": "haffidotdev",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "turbo build",
+    "check": "turbo check",
+    "dev": "turbo dev --parallel",
+    "deploy": "turbo deploy",
+    "deploy:next": "pnpm --filter @haffi/next run deploy",
+    "deploy:tanstack": "pnpm --filter @haffi/tanstack run deploy"
+  },
+  "devDependencies": {
+    "turbo": "latest",
+    "typescript": "^5.9.3",
+    "wrangler": "latest"
+  }
+}

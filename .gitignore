@@ -1,0 +1,16 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+
+node_modules/
+.turbo/
+dist/
+
+.next/
+.open-next/
+.output/
+.vercel/
+.wrangler/
+
+*.tsbuildinfo

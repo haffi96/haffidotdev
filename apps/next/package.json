@@ -1,0 +1,28 @@
+{
+  "name": "@haffi/next",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "build:worker": "opennextjs-cloudflare build",
+    "check": "tsc --noEmit",
+    "deploy": "pnpm build:worker && wrangler deploy",
+    "dev": "next dev"
+  },
+  "dependencies": {
+    "@haffi/shared": "workspace:*",
+    "@opennextjs/cloudflare": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "^5.9.3",
+    "wrangler": "latest"
+  }
+}
