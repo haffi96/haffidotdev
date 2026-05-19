@@ -9,7 +9,8 @@
     "dev": "turbo dev --parallel",
     "deploy": "turbo deploy",
     "deploy:next": "pnpm --filter @haffi/next run deploy",
-    "deploy:tanstack": "pnpm --filter @haffi/tanstack run deploy"
+    "deploy:tanstack": "pnpm --filter @haffi/tanstack run deploy",
+    "deploy:mywebsite": "pnpm --filter @haffi/mywebsite run deploy"
   },
   "devDependencies": {
     "turbo": "latest",

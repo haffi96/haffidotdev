@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply m-0 bg-zinc-200 text-black dark:bg-zinc-900 dark:text-white;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  a {
+    @apply underline-offset-4;
+  }
+}
+
+@layer components {
+  .content-prose {
+    @apply max-w-none leading-7 text-black dark:text-zinc-300;
+  }
+
+  .content-prose h1,
+  .content-prose h2,
+  .content-prose h3,
+  .content-prose h4 {
+    @apply mt-8 mb-4 font-bold text-black dark:text-white;
+  }
+
+  .content-prose h1 { @apply text-3xl; }
+  .content-prose h2 { @apply text-2xl; }
+  .content-prose h3 { @apply text-xl; }
+  .content-prose h4 { @apply text-lg; }
+
+  .content-prose p,
+  .content-prose ul,
+  .content-prose ol,
+  .content-prose pre,
+  .content-prose table {
+    @apply my-4;
+  }
+
+  .content-prose ul { @apply list-disc pl-6; }
+  .content-prose ol { @apply list-decimal pl-6; }
+  .content-prose li { @apply my-1; }
+
+  .content-prose a {
+    @apply text-black underline dark:text-white;
+  }
+
+  .content-prose code {
+    @apply rounded bg-zinc-300 px-1 py-0.5 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200;
+  }
+
+  .content-prose pre {
+    @apply overflow-x-auto rounded-lg bg-zinc-950 p-4 text-zinc-100;
+  }
+
+  .content-prose pre code {
+    @apply bg-transparent p-0 text-inherit;
+  }
+
+  .content-prose img {
+    @apply my-6 max-w-full rounded-lg bg-white;
+  }
+
+  .content-prose table {
+    @apply w-full border-collapse overflow-hidden rounded-lg text-left;
+  }
+
+  .content-prose th,
+  .content-prose td {
+    @apply border border-zinc-400 px-3 py-2 dark:border-zinc-700;
+  }
+}

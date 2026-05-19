@@ -1,0 +1,185 @@
+---
+title: Data Structures - Trees
+rank: 9
+category: general
+name: trees
+---
+import { Image } from 'astro:assets';
+import binaryTreeImage from '@media/binary-tree.png';
+import astImage from '@media/ast.png';
+
+
+In this post, I'm going to be defining what a tree is in the framing of data structures, the properties that make it a tree, common implementations and different ways of traversing a tree.
+
+<Image src={binaryTreeImage} alt="" width="500" height="300" />
+
+#### Main
+
+To understand a tree, we also need to be aware of graph data structures (link to graph post). TLDR is, a graph is a collection of vertices (aka nodes) and edges that connect these vertices. Edges represent relationships or connection between nodes. Graphs can be directed or undirected, basically either the edges have a specific direction or not.
+
+Due to the direction property on edges, there can be a cycle between nodes, i.e two nodes which both direct to each other. This brings us to tree
+
+
+#### Properties of trees
+
+A **tree** is a special type of graph that is connected and acyclic, meaning that there no cycles between the nodes in the graph. Between two nodes, there is always a unique path.
+
+Each tree has a single node known as the 'root'. This is the starting point for any method of traversing the tree.
+
+Each child nodes is a 'sub-tree'. Meaning, each node can have child nodes.
+
+
+#### Types of trees
+
+
+A tree can be binary or non-binary.
+
+- A binary tree, each node has at most two child nodes
+- A non-binary tree, each node can have any number of child nodes
+
+#### Applications of trees
+
+Binary trees are commonly used in searching or sorting problems. Another good example of a binary tree is an abstract syntax tree, which is a tree representation of expressions and text in code.
+
+<Image
+  src={astImage}
+  alt=""
+  width="500"
+  height="300"
+  style="background-color:#ffff"
+/>
+
+
+An example of non-binary tree is a file-system. A directory can have any number of sub-directories where each sub-directory is a sub-tree.
+
+
+#### Ways of traversing a tree
+
+Linear data structures such as Array, Linked List, Queues, Stacks only have one logical way to traverse them.
+
+However, trees are a non-linear data structure. Therefore, can be traversed in different ways. The following are common methods:
+
+- Pre-order traversal
+- In-order traversal
+- Post-order traversal
+
+Example tree:
+
+```
+      1
+    2   3
+   4 5
+
+```
+
+#### Pre-order traversal
+
+Pseudo-code algo:
+
+1. Visit the root
+2. Traverse the left subtree. Recursive call to Pre-order(left subtree)
+3. Traverse the right subtree. Recursive call to Pre-order(right subtree)
+
+```python
+# A function to do preorder tree traversal
+def printPreorder(root):
+
+    if root:
+
+        # First print the data of node
+        print(root.val)
+
+        # Then recur on left child
+        printPreorder(root.left)
+
+        # Finally recur on right child
+        printPreorder(root.right)
+```
+
+Example: Pre-order traversal for the above-given figure is `1 2 4 5 3`.
+
+**Complexity:**
+
+Time: O(N), we have to visit each node at least once
+Space: If we consider the size of the call stack for function calls, then it's O(h) where h is the height of the tree. If we don't, then it's O(1) because we don't need to store anything extra if we're just visiting the node
+
+**Use-cases**
+
+Pre-order traversal is used to create a copy of the tree
+
+
+##### In-order traversal
+
+
+Pseudo-code algo:
+
+**In-order(tree):**
+
+1. Traverse the left subtree. Recursive call to Pre-order(left subtree)
+2. Visit the root
+3. Traverse the right subtree. Recursive call to Pre-order(right subtree)
+
+```python
+# A function to do preorder tree traversal
+def printPreorder(root):
+
+    if root:
+        # Then recur on left child
+        printPreorder(root.left)
+
+        # First print the data of node
+        print(root.val)
+
+        # Finally recur on right child
+        printPreorder(root.right)
+```
+
+Example: In-order traversal for the above-given figure is `4 2 5 1 3`.
+
+**Complexity:**
+
+Time: O(N), we have to visit each node at least once
+Space: If we consider the size of the call stack for function calls, then it's O(h) where h is the height of the tree. If we don't, then it's O(1) because we don't need to store anything extra if we're just visiting the node
+
+**Use-cases**
+
+In a BST (Binary search tree). Where a left subtree nodes are always less than the root, the right subtree nodes are always greater than the root, and each subtree of is also a BST.
+
+In order traversal gives the nodes in a non-decreasing order. To get nodes of BST in non-increasing order, a variation can be used where the traversal is reversed can be used. i.e recurse on right subtree first, print node, then recurse left subtree
+
+
+#### Post-order traversal
+
+Pseudo-code algo:
+
+**Post-order(tree):**
+
+1. Traverse the left subtree. Recursive call to Pre-order(left subtree)
+2. Traverse the right subtree. Recursive call to Pre-order(right subtree)
+3. Visit the root
+
+```python
+# A function to do preorder tree traversal
+def printPreorder(root):
+
+    if root:
+        # Then recur on left child
+        printPreorder(root.left)
+
+        # Finally recur on right child
+        printPreorder(root.right)
+
+        # First print the data of node
+        print(root.val)
+```
+
+Example: In-order traversal for the above-given figure is `4 5 2 3 1`.
+
+**Complexity:**
+
+Time: O(N), we have to visit each node at least once
+Space: If we consider the size of the call stack for function calls, then it's O(h) where h is the height of the tree. If we don't, then it's O(1) because we don't need to store anything extra if we're just visiting the node
+
+**Use-cases**
+
+Post order traversal is used to delete the tree.

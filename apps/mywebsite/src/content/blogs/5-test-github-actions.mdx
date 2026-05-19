@@ -1,0 +1,139 @@
+---
+title: Testing CI docker push via github action locally
+rank: 5
+category: general
+name: test-github-actions
+---
+
+A tool called [act](https://github.com/nektos/act) makes this possible. It allows us to test run github actions locally. This can be useful for a quicker feedback loop than setting up a test github repository. Also in cases, setting up a testing repository may not be feasible i.e testing github organization or enterprise specigic things. Act won't let you test everything org specific but you can get pretty close
+
+#### Getting started
+
+Pre-requisites:
+
+-  [Docker](https://www.docker.com/products/docker-desktop/)
+-  [act](https://github.com/nektos/act)
+
+```sh
+brew install act
+```
+
+#### Setting up your app to be Dockerized
+
+To create a simple flask app for example (This can be anything):
+
+Create a new directory and create a file in it i.e app.py
+
+```sh
+pip install flask
+```
+
+```python
+from flask import Flask
+
+app = Flask(__name__)
+
+
+@app.route("/")
+def hello_world():
+    return "Hello from flask"
+
+if __name__ == "__main__":
+    app.run(debug=True)
+```
+
+```
+pip freeze > requirements.txt
+```
+
+#### Quick Dockerfile
+
+```shell
+FROM python:3.11.1-slim-buster
+
+WORKDIR /src
+
+COPY requirements.txt requirements.txt
+
+RUN pip3 install -r requirements.txt
+
+COPY . .
+
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
+
+```
+
+Creating local docker registry or use the github container registry (ghcr)
+
+```sh
+docker run -d -p 5001:5000 --restart=always --name registry registry:2
+```
+
+Now we need a file to define the structure of our github ci action
+
+This usually lives at .github/workflows/test-ci.yaml at the project root
+
+### Example CI yaml file w/ docker build-and-push plugin
+
+```yaml
+name: Build and deploy new app image
+
+on:
+    push:
+        branches:
+        - master
+
+jobs:
+    push-app-image:
+        if: github.event_name == 'push'
+        name: push-app-image
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v3
+            with:
+            fetch-depth: 0
+        - run: echo "::set-output name=date::$(date +'%FT%H%M%SZ')"
+            id: date
+        - uses: docker/login-action@v1
+            with:
+            registry: local-registry
+            username:
+            password:
+        - uses: docker/build-push-action@v2
+            with:
+            context: .
+            push: true
+            tags: |
+                localhost:5001/${{ github.event.repository.name }}:${{ steps.date.outputs.date }}
+                localhost:5001/${{ github.event.repository.name }}:latest
+        - uses: docker/build-push-action@v2
+            with:
+            context: .
+            file: ./Another.Dockerfile
+            push: true
+            tags : |
+                localhost:5001/${{ github.event.repository.name }}-admin:${{ steps.date.outputs.date }}
+                localhost:5001/${{ github.event.repository.name }}-admin:latest
+```
+
+So, the folder structure should now look like this:
+
+```sh
+flask-app:
+    | - .github:
+        | - workflows:
+            | - test-ci.yaml
+    | - app.py
+    | - Dockerfile
+    | - requirements.txt
+    | - .git
+    | - .gitignore
+```
+
+Now we can run the github action with act:
+
+```sh
+act -w .github/workflows/test.yaml
+```
+
+Note: You'll need to add `--container-architecture linux/amd64` if you're on M1 Mac

@@ -1,0 +1,83 @@
+---
+title: Supabase - Increment or insert column value with postgres functions
+rank: 4
+category: database
+name: supabase-function
+---
+import { Image } from 'astro:assets';
+import supabaseImage1 from '@media/supabase_1.png';
+import supabaseImage2 from '@media/supabase_2.png';
+
+Looking for a quick way to increment a value in a supabase table?
+
+#### Supabase functions
+
+---
+
+The supabase sdk allows you to do a range of things with the table however it doesn't let you execute custom sql. However, it does let you trigger postgres function with the rpc method https://supabase.com/docs/reference/javascript/rpc
+
+We can combine this with postgres function that can update a table field of choice to easily increment values
+
+## Example
+
+---
+
+You have a table `metric` like this:
+
+| id  | user_id | count_a | count_b |
+| --- | ------- | ------- | ------- |
+| 1   | 1       | 0       | 0       |
+| 2   | 2       | 0       | 0       |
+
+and you want to simply increment a column from a backend call
+
+
+#### We can define a postgres function which takes a user_id and the field/column you want to increment
+
+
+```sql
+CREATE OR REPLACE FUNCTION increment(user_id_to_inc INT, field_name TEXT)
+RETURNS VOID AS
+$func$
+BEGIN
+    EXECUTE format('INSERT INTO metric (user_id, %I)
+    VALUES ($1, 1) ON CONFLICT (user_id) DO UPDATE
+    SET %I = metric.%I + 1 WHERE metric.user_id = $1', field_name, field_name, field_name, field_name)
+    USING user_id_to_inc;
+END
+$func$ LANGUAGE plpgsql;
+```
+
+Note: There needs to be unique constraint on user_id and any field name that you want to increment must have a default of 0
+
+### Supabase SQL editor
+
+We need to add the postgres function into the supabase dashboard
+
+#### Go to the sql editor on supabase
+
+<Image src={supabaseImage1} alt="" width="250" height="300" />
+
+#### Create a new query, copy in the function and run query
+
+<Image src={supabaseImage2} alt="" width="600" height="500" />
+
+### We can now call this function from our application
+
+Here is an example of invoking the postgres from typescript using the supabase sdk
+
+```typescript
+export async function incrementCountForUser(
+  userID: number,
+  count_field: string
+) {
+  const field_to_increment = `count_${count_field}`; // count_a or count_b
+  const { data, error } = await supabaseBrowser.rpc("increment", {
+    user_id_to_inc: userID,
+    field_name: field_to_increment,
+  });
+  if (error) {
+    console.log(error);
+  }
+}
+```

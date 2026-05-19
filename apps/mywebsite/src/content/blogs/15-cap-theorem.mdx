@@ -1,0 +1,88 @@
+---
+title: Cap Theorem
+rank: 15
+category: general
+ignore: false
+name: cap-theorem
+---
+import { Image } from 'astro:assets';
+import capTheoremImage from '@media/cap-theorem.png';
+import capCompareDbImage from '@media/cap-compare-db.png';
+
+#### What is CAP?
+
+CAP theorem states that a distributed system can only provide two of three of the following properties simultaneously. The theorem helps justify the trade-offs distributed systems have to make in order to reach their specific requirements.
+
+- C -> Consistency
+- A -> Availability
+- P -> Partition tolerance
+
+#### Main
+
+<Image src={capTheoremImage} alt="" width="500" height="300" />
+
+The image above shows a network failure between node A and node B, which are replicas of each other.
+
+- If an end-user performs a write request to node A, we can write the data to node
+  A, and return a success response.
+- If the user performs a read request to node B,
+  we can read data from node B and return it to user. Success.
+
+Therefore, this distributed system is highly available. However, due to the network
+failure, the write on Node A hasn't not been replicated to Node B yet, meaning this
+system is not consistent. It may be replicate later when network recovers, meaning
+it's eventually consistent. However, the priority here is availability.
+
+An alternate approach would be to fail the write request if node A can't instantly
+replicate to node B. This would make it consistent, but not highly available.
+
+**Consistency** means that all clients of the application see the same data at the
+same time, matter which nodes they connect to in a distributed system. For this to
+happen, whenever the data is written to one node, it must be instantly forwarded
+or replicate to all the other nodes between a write is complete or 'successful'
+
+**Availability** means that any client making a request for data gets a response regardless of whether any of the nodes are down. Any of the nodes in the distributed system are available to return the correct response or fulfill a request, without exception. This makes it highly available for requests. However, there is no guarantee that the response will be up to date with all recent writes.
+
+**Partition tolerance** refers to the ability to continue to work despite communication breakdowns between nodes. The partition can occur due to loss of connection or delays in requests between two nodes.
+
+#### How does CAP apply to different database systems?
+
+<Image src={capCompareDbImage} alt="" width="500" height="300" />
+
+#### Relational databases
+
+**Consistent?** Yes
+
+RDBMS are usually a single node server. All reads/writes go to the single node. Therefore, data is always consistent. Relational databases are usually classified as CA - Consistent and Available.
+
+**Available?** Yes, but kind of.
+
+A single node is a single of point of failure. So if it goes down, no requests can be served. However, this downtime is not the same the availability which is referred to by the CAP theorem. CAP-Availability refers to a system's ability to serve request despite a network partition. However, in a single node system, there won't be a network partition, hence if the node is up, it will always return a response.
+
+Relation databases can however be replicated. When replicated they are more applicable to the CAP theorem. Availability can suffer if the primary node down and a new leader needs to be selected. Consistency can suffer if the read request go through secondary, and write requests go through primary. As it will take some time to replicate the new write data from primary to secondary
+
+So single server RDBMS can have downtime but it is always CAP-Available and CAP-Consistent
+
+If the RDMS is replicated, the system can be kept consistent if the reads and writes are performed only through the primary node.
+
+#### NoSQL databases
+
+Different noSQL databases have their own methods of dealing with the properties of the CAP theorem. We'll be looking at Amazon DynamoDB specifically.
+
+#### Amazon DynamoDB
+
+CAP theorem is a good concept to understand the fundamentals, however technologies now are able to provide a more complete solution with less trade-offs.
+
+Every AWS Region consists of multiple distinct locations which are called Availability Zones (AZ). Each AZ is isolated and provides inexpensive, low-latency network connectivity to other AZs in the same region. This allows for apid replication of data between AZs in a region.
+
+DynamoDB is configured to choose availability and partition tolerance with eventual write consistency. When a user writes to a DynamoDB table and receives a success response. The data is eventually consistent across all storage locations usually within a second or less.
+
+DynamoDB supports eventually consistent AND strongly consistent reads.
+
+**Eventually consistent reads:**
+
+A read request may not have the most up to date data, but repeating the request after a short time, will return the latest data.
+
+**Strong consistent reads:**
+
+You can request a strongly consistent read, DynamoDB will return the most up to date data reflecting all prior writes. However, this consistency suffers from disadvantages like network delays.
