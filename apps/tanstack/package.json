@@ -22,11 +22,13 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "latest",
+    "@tailwindcss/vite": "latest",
     "@tanstack/router-plugin": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
+    "tailwindcss": "latest",
     "typescript": "^5.9.3",
     "vite": "latest",
     "wrangler": "latest"

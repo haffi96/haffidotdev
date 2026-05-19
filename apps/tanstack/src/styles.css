@@ -1,73 +1,12 @@
-:root {
-  color-scheme: light;
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  background: #f8efe0;
-  color: #201710;
-}
+@import "tailwindcss";
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  :root {
+    color-scheme: light;
+  }
 
-body {
-  margin: 0;
-}
-
-.page {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 32px;
-  background:
-    linear-gradient(90deg, rgba(32, 23, 16, 0.08) 1px, transparent 1px),
-    linear-gradient(rgba(32, 23, 16, 0.08) 1px, transparent 1px),
-    #f8efe0;
-  background-size: 38px 38px;
-}
-
-.panel {
-  width: min(100%, 820px);
-  border: 2px solid #201710;
-  border-radius: 8px;
-  padding: clamp(28px, 7vw, 68px);
-  background: #fff9ed;
-  box-shadow: 14px 14px 0 #201710;
-}
-
-.eyebrow {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  margin: 0 0 18px;
-  text-transform: uppercase;
-}
-
-h1 {
-  font-size: clamp(3.2rem, 11vw, 7.5rem);
-  letter-spacing: -0.08em;
-  line-height: 0.85;
-  margin: 0;
-}
-
-.summary {
-  font-size: clamp(1.1rem, 3vw, 1.45rem);
-  line-height: 1.55;
-  margin: 30px 0 0;
-  max-width: 56ch;
-}
-
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 34px;
-}
-
-.meta span {
-  border: 2px solid #201710;
-  border-radius: 999px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 0.86rem;
-  padding: 8px 13px;
+  body {
+    @apply m-0 bg-[#f8efe0] text-[#201710];
+    font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  }
 }
