@@ -1,4 +1,5 @@
 import { formatAppTitle, haffiDomain } from "@haffi/shared";
+import type { ReactElement } from "react";
 
 const app = {
   name: "next",
@@ -6,7 +7,7 @@ const app = {
   framework: "Next.js"
 };
 
-export default function Home() {
+export default function Home(): ReactElement {
   return (
     <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top_left,rgba(68,176,255,0.32),transparent_34rem),linear-gradient(135deg,#07111f,#111827_52%,#06141c)] p-8">
       <section className="w-full max-w-[760px] rounded-[28px] border border-[rgba(236,247,255,0.16)] bg-[rgba(7,17,31,0.72)] p-[clamp(28px,7vw,64px)] shadow-[0_24px_80px_rgba(0,0,0,0.32)] backdrop-blur-[18px]">
