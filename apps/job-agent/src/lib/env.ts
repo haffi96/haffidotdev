@@ -8,6 +8,7 @@ export type AppEnv = {
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   OPENAI_API_KEY?: string;
+  TAILORING_MODEL?: string;
 };
 
 export function getEnv() {

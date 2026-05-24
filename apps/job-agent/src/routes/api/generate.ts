@@ -1,4 +1,4 @@
-import { fetchJobDescription, generateApplicationDocuments, modelName } from "#/lib/ai";
+import { fetchJobDescription, generateApplicationDocuments, tailoringModelName } from "#/lib/ai";
 import { requireUser } from "#/lib/auth";
 import { getAppData, saveDocument, saveGeneration } from "#/lib/db";
 import { documentKey, putDocument } from "#/lib/documents";
@@ -11,9 +11,14 @@ export const Route = createFileRoute("/api/generate")({
         const auth = await requireUser(request);
         if ("response" in auth) return auth.response;
 
-        const body = (await request.json()) as { jobUrl?: string; jobDescription?: string };
+        const body = (await request.json()) as { companyName?: string; jobUrl?: string; jobDescription?: string };
+        const companyName = body.companyName?.trim() || "";
         const jobUrl = body.jobUrl?.trim() || "";
         let jobDescription = body.jobDescription?.trim() || "";
+
+        if (!companyName) {
+          return Response.json({ error: "Add the company name." }, { status: 400 });
+        }
 
         if (!jobDescription && jobUrl) {
           jobDescription = await fetchJobDescription(jobUrl);
@@ -24,9 +29,9 @@ export const Route = createFileRoute("/api/generate")({
         }
 
         const appData = await getAppData(auth.user.id);
-        const output = await generateApplicationDocuments({ appData, jobUrl, jobDescription });
+        const output = await generateApplicationDocuments({ appData, companyName, jobUrl, jobDescription });
 
-        const baseFilename = slugify(jobUrl || "job-application");
+        const baseFilename = slugify(`${companyName}-${jobUrl || "job-application"}`);
         const cvFilename = `${baseFilename}-cv.md`;
         const letterFilename = `${baseFilename}-cover-letter.md`;
         const cvKey = documentKey(auth.user.id, "generated_cv", cvFilename);
@@ -51,13 +56,14 @@ export const Route = createFileRoute("/api/generate")({
         });
 
         const generationId = await saveGeneration(auth.user.id, {
+          company_name: companyName,
           job_url: jobUrl,
           job_description: jobDescription,
           generated_cv: output.tailoredCv,
           generated_cover_letter: output.coverLetter,
           cv_document_id: cvDocumentId,
           cover_letter_document_id: coverLetterDocumentId,
-          model: modelName
+          model: tailoringModelName()
         });
 
         return Response.json({ id: generationId, cvDocumentId, coverLetterDocumentId, ...output });

@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 import type { AppData } from "./db";
 import { getEnv } from "./env";
@@ -19,14 +19,19 @@ const experienceSchema = z.object({
   )
 });
 
-export const modelName = "gpt-4o-mini";
+export const parsingModelName = "gpt-4o-mini";
+
+export function tailoringModelName() {
+  return getEnv().TAILORING_MODEL || "gpt-5.5";
+}
 
 export async function generateApplicationDocuments(input: {
   appData: AppData;
+  companyName: string;
   jobUrl: string;
   jobDescription: string;
 }) {
-  const { appData, jobUrl, jobDescription } = input;
+  const { appData, companyName, jobUrl, jobDescription } = input;
   const experience = appData.experienceEntries.length
     ? appData.experienceEntries.map(({ title, kind, content }) => ({ title, kind, content }))
     : safeJson(appData.sourceMaterial.achievements_json);
@@ -45,6 +50,14 @@ Hard rules:
 - If the job description is thin, be conservative.
 - Return Markdown.
 
+CV layout rules:
+- Preserve the original CV structure as closely as possible from the source material.
+- Keep the same broad section order and section names where they can be inferred.
+- Keep experience grouped by the same jobs/projects rather than merging or splitting entries unless the source material already separates them.
+- Keep roughly the same bullet density and level of detail as the source entries.
+- Do not redesign the CV, add new decorative sections, or change it into a different template.
+- Tailoring should primarily reorder emphasis, lightly adjust summaries, and select the most relevant bullets while maintaining the original layout.
+
 User profile:
 ${JSON.stringify(appData.profile, null, 2)}
 
@@ -60,6 +73,9 @@ ${appData.sourceMaterial.extra_notes || "No extra notes provided."}
 Additional user instructions:
 ${appData.instructions || "No additional instructions provided."}
 
+Company:
+${companyName}
+
 Job URL:
 ${jobUrl || "No URL provided."}
 
@@ -67,19 +83,59 @@ Job description:
 ${jobDescription || "No job description provided."}`;
 
   const openai = createOpenAI({ apiKey: getEnv().OPENAI_API_KEY });
-  const result = await generateObject({
-    model: openai(modelName),
-    schema: outputSchema,
+  const result = await generateText({
+    model: openai(tailoringModelName()),
+    output: Output.object({ schema: outputSchema }),
     prompt
   });
 
-  return result.object;
+  return result.output;
 }
 
 export async function parseCvIntoExperience(input: { filename: string; contentType: string; bytes: ArrayBuffer }) {
   const openai = createOpenAI({ apiKey: getEnv().OPENAI_API_KEY });
-  const text = input.contentType.startsWith("text/") ? new TextDecoder().decode(input.bytes).slice(0, 40_000) : "";
-  const prompt = `Extract the user's jobs and notable projects into separate experience entries.
+  const text = cvText(input);
+  const prompt = cvParsePrompt(input, text);
+
+  if (text) {
+    const result = await generateText({
+      model: openai(parsingModelName),
+      output: Output.object({ schema: experienceSchema }),
+      prompt,
+      abortSignal: AbortSignal.timeout(45_000)
+    });
+    return result.output.entries;
+  }
+
+  const result = await generateText({
+    model: openai(parsingModelName),
+    output: Output.object({ schema: experienceSchema }),
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: prompt },
+          {
+            type: "file",
+            data: new Uint8Array(input.bytes),
+            mediaType: input.contentType || "application/pdf",
+            filename: input.filename,
+          }
+        ]
+      }
+    ],
+    abortSignal: AbortSignal.timeout(45_000)
+  });
+
+  return result.output.entries;
+}
+
+function cvText(input: { contentType: string; bytes: ArrayBuffer }) {
+  return input.contentType.startsWith("text/") ? new TextDecoder().decode(input.bytes).slice(0, 40_000) : "";
+}
+
+function cvParsePrompt(input: { filename: string; contentType: string; bytes: ArrayBuffer }, text = cvText(input)) {
+  return `Extract the user's jobs and notable projects into separate experience entries.
 
 Rules:
 - Create one entry per job or project.
@@ -91,78 +147,6 @@ Rules:
 Filename: ${input.filename}
 Content type: ${input.contentType}
 ${text ? `\nCV text:\n${text}` : "\nThe CV is a PDF/binary document. Extract text from the attached PDF content."}`;
-
-  if (text) {
-    const result = await generateObject({ model: openai(modelName), schema: experienceSchema, prompt });
-    return result.object.entries;
-  }
-
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${getEnv().OPENAI_API_KEY}`,
-      "content-type": "application/json"
-    },
-    body: JSON.stringify({
-      model: modelName,
-      input: [
-        {
-          role: "user",
-          content: [
-            { type: "input_text", text: prompt },
-            {
-              type: "input_file",
-              filename: input.filename,
-              file_data: `data:${input.contentType || "application/pdf"};base64,${toBase64(input.bytes)}`
-            }
-          ]
-        }
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "experience_entries",
-          schema: {
-            type: "object",
-            additionalProperties: false,
-            properties: {
-              entries: {
-                type: "array",
-                items: {
-                  type: "object",
-                  additionalProperties: false,
-                  properties: {
-                    title: { type: "string" },
-                    kind: { type: "string", enum: ["job", "project", "other"] },
-                    content: { type: "string" }
-                  },
-                  required: ["title", "kind", "content"]
-                }
-              }
-            },
-            required: ["entries"]
-          },
-          strict: true
-        }
-      }
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`OpenAI CV parsing failed (${response.status}).`);
-  }
-
-  const body = (await response.json()) as { output?: Array<{ content?: Array<{ text?: string }> }> };
-  const json = body.output?.flatMap((item) => item.content || []).find((item) => item.text)?.text;
-  if (!json) throw new Error("OpenAI did not return parsed experience entries.");
-  return experienceSchema.parse(JSON.parse(json)).entries;
-}
-
-function toBase64(bytes: ArrayBuffer) {
-  let binary = "";
-  const array = new Uint8Array(bytes);
-  for (const byte of array) binary += String.fromCharCode(byte);
-  return btoa(binary);
 }
 
 function safeJson(value: string) {

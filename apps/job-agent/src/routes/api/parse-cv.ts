@@ -18,23 +18,29 @@ export const Route = createFileRoute("/api/parse-cv")({
         if (!document) return Response.json({ error: "Document not found." }, { status: 404 });
 
         await updateDocumentParseStatus(auth.user.id, document.id, "parsing");
+        console.log({ event: "cv_parse_started", userId: auth.user.id, documentId: document.id, filename: document.filename, size: document.size_bytes });
 
         try {
           const object = await getDocumentObject(document.r2_key);
           if (!object) throw new Error("Document object not found in R2.");
 
+          const bytes = await object.arrayBuffer();
+          console.log({ event: "cv_parse_openai_started", userId: auth.user.id, documentId: document.id });
           const entries = await parseCvIntoExperience({
             filename: document.filename,
             contentType: document.content_type,
-            bytes: await object.arrayBuffer()
+            bytes
           });
+          console.log({ event: "cv_parse_openai_completed", userId: auth.user.id, documentId: document.id, entries: entries.length });
 
           await appendExperienceEntries(auth.user.id, entries);
           await updateDocumentParseStatus(auth.user.id, document.id, "parsed");
+          console.log({ event: "cv_parse_completed", userId: auth.user.id, documentId: document.id, entries: entries.length });
           return Response.json({ entries });
         } catch (error) {
           const message = error instanceof Error ? error.message : "CV parsing failed.";
           await updateDocumentParseStatus(auth.user.id, document.id, "failed", message);
+          console.error({ event: "cv_parse_failed", userId: auth.user.id, documentId: document.id, message, stack: error instanceof Error ? error.stack : undefined });
           return Response.json({ error: message }, { status: 500 });
         }
       }

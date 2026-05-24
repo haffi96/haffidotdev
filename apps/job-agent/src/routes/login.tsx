@@ -36,7 +36,7 @@ function Login() {
       return;
     }
 
-    await navigate({ to: "/app" });
+    await navigate({ to: "/app", search: { tab: "profile" } });
   }
 
   return (

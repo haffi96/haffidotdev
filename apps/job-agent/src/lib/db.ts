@@ -47,6 +47,7 @@ export type ExperienceEntry = {
 
 export type GenerationRecord = {
   id: string;
+  company_name: string;
   job_url: string;
   job_description: string;
   generated_cv: string;
@@ -80,7 +81,7 @@ export async function getAppData(userId: string): Promise<AppData> {
   const instruction = await db.prepare("SELECT instructions FROM agent_instruction WHERE user_id = ?").bind(userId).first<{ instructions: string }>();
   const documents = await db.prepare("SELECT id, kind, filename, content_type, r2_key, size_bytes, parse_status, parse_error, created_at FROM document WHERE user_id = ? ORDER BY created_at DESC LIMIT 25").bind(userId).all<DocumentRecord>();
   const experienceEntries = await db.prepare("SELECT id, title, kind, content, sort_order, created_at, updated_at FROM experience_entry WHERE user_id = ? ORDER BY sort_order, created_at").bind(userId).all<ExperienceEntry>();
-  const generations = await db.prepare("SELECT id, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model, created_at FROM job_generation WHERE user_id = ? ORDER BY created_at DESC LIMIT 20").bind(userId).all<GenerationRecord>();
+  const generations = await db.prepare("SELECT id, company_name, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model, created_at FROM job_generation WHERE user_id = ? ORDER BY created_at DESC LIMIT 20").bind(userId).all<GenerationRecord>();
 
   return {
     profile: profile || emptyProfile,
@@ -180,11 +181,12 @@ export async function getDocument(userId: string, documentId: string) {
 export async function saveGeneration(userId: string, generation: Omit<GenerationRecord, "id" | "created_at">) {
   const id = crypto.randomUUID();
   await getEnv().DB.prepare(
-    "INSERT INTO job_generation (id, user_id, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO job_generation (id, user_id, company_name, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   )
     .bind(
       id,
       userId,
+      generation.company_name,
       generation.job_url,
       generation.job_description,
       generation.generated_cv,
