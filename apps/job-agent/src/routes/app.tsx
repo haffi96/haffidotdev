@@ -5,10 +5,10 @@ import { Input } from "#/components/ui/input";
 import { TabButton } from "#/components/ui/tabs";
 import { Textarea } from "#/components/ui/textarea";
 import { authClient } from "#/lib/auth-client";
-import type { AppData, ExperienceEntry, GenerationRecord } from "#/lib/db";
+import type { AppData, ExperienceEntry, GenerationComment, GenerationRecord } from "#/lib/db";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Document, Packer, Paragraph, TextRun } from "docx";
-import { Copy, Download, FileDown, FileUp, LogOut, Plus, Wand2 } from "lucide-react";
+import { Copy, Download, FileDown, FileUp, LogOut, MessageCircle, Plus, RefreshCw, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/app")({
@@ -31,6 +31,7 @@ function App() {
   const [jobUrl, setJobUrl] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [revising, setRevising] = useState(false);
 
   useEffect(() => {
     void loadData();
@@ -157,6 +158,45 @@ function App() {
     await loadData();
   }
 
+  async function addComment(input: { generationId: string; documentKind: "cv" | "cover_letter"; anchorText: string; commentText: string }) {
+    setMessage("");
+    const response = await fetch("/api/comments", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(input)
+    });
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setMessage(body?.error || "Could not save comment.");
+      return;
+    }
+
+    const body = (await response.json()) as { data: AppData };
+    setData(body.data);
+    setMessage("Comment added.");
+  }
+
+  async function requestRevision(generationId: string) {
+    setRevising(true);
+    setMessage("");
+    const response = await fetch("/api/revise", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ generationId })
+    });
+    setRevising(false);
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setMessage(body?.error || "Revision failed.");
+      return;
+    }
+
+    setMessage("Created a new revision and resolved the comments.");
+    await loadData();
+  }
+
   if (!data) {
     return <main className="grid min-h-screen place-items-center bg-slate-100 text-slate-700">Loading workspace...</main>;
   }
@@ -207,9 +247,12 @@ function App() {
             generating={generating}
             generate={generate}
             latestGeneration={latestGeneration}
+            addComment={addComment}
+            requestRevision={requestRevision}
+            revising={revising}
           />
         ) : null}
-        {tab === "history" ? <HistorySection generations={data.generations} /> : null}
+        {tab === "history" ? <HistorySection generations={data.generations} addComment={addComment} requestRevision={requestRevision} revising={revising} /> : null}
       </section>
     </main>
   );
@@ -385,6 +428,9 @@ function GenerateSection(props: {
   generating: boolean;
   generate: () => Promise<void>;
   latestGeneration?: GenerationRecord;
+  addComment: AddComment;
+  requestRevision: (generationId: string) => Promise<void>;
+  revising: boolean;
 }) {
   return (
     <div className="grid gap-6 lg:grid-cols-[0.8fr_1fr]">
@@ -408,34 +454,34 @@ function GenerateSection(props: {
           <CardDescription>Downloads are stored in R2 as Markdown files.</CardDescription>
         </CardHeader>
         <CardContent>
-          {props.latestGeneration ? <Generation generation={props.latestGeneration} /> : <p className="text-sm text-slate-500">No generations yet.</p>}
+          {props.latestGeneration ? <Generation generation={props.latestGeneration} addComment={props.addComment} requestRevision={props.requestRevision} revising={props.revising} /> : <p className="text-sm text-slate-500">No generations yet.</p>}
         </CardContent>
       </Card>
     </div>
   );
 }
 
-function HistorySection({ generations }: { generations: Array<GenerationRecord> }) {
+function HistorySection({ generations, addComment, requestRevision, revising }: { generations: Array<GenerationRecord>; addComment: AddComment; requestRevision: (generationId: string) => Promise<void>; revising: boolean }) {
   const groups = generations.reduce<Record<string, Array<GenerationRecord>>>((result, generation) => {
-    const company = generation.company_name || "Uncategorized";
-    result[company] = [...(result[company] || []), generation];
+    const session = generation.session_id || generation.id;
+    result[session] = [...(result[session] || []), generation].sort((a, b) => a.revision_number - b.revision_number);
     return result;
   }, {});
-  const companies = Object.keys(groups);
-  const [selectedCompany, setSelectedCompany] = useState(companies[0] || "");
-  const companyGenerations = groups[selectedCompany] || groups[companies[0] || ""] || [];
-  const [selectedGenerationId, setSelectedGenerationId] = useState(companyGenerations[0]?.id || "");
-  const selectedGeneration = companyGenerations.find((generation) => generation.id === selectedGenerationId) || companyGenerations[0];
+  const sessions = Object.keys(groups).sort((a, b) => (groups[b]?.at(-1)?.created_at || "").localeCompare(groups[a]?.at(-1)?.created_at || ""));
+  const [selectedSession, setSelectedSession] = useState(sessions[0] || "");
+  const sessionGenerations = groups[selectedSession] || groups[sessions[0] || ""] || [];
+  const [selectedGenerationId, setSelectedGenerationId] = useState(sessionGenerations.at(-1)?.id || "");
+  const selectedGeneration = sessionGenerations.find((generation) => generation.id === selectedGenerationId) || sessionGenerations.at(-1);
 
   useEffect(() => {
-    if (!companies.length) return;
-    if (!groups[selectedCompany]) setSelectedCompany(companies[0] || "");
-  }, [companies.join("|"), groups, selectedCompany]);
+    if (!sessions.length) return;
+    if (!groups[selectedSession]) setSelectedSession(sessions[0] || "");
+  }, [sessions.join("|"), selectedSession]);
 
   useEffect(() => {
-    if (!companyGenerations.length) return;
-    if (!companyGenerations.some((generation) => generation.id === selectedGenerationId)) setSelectedGenerationId(companyGenerations[0]?.id || "");
-  }, [companyGenerations, selectedGenerationId]);
+    if (!sessionGenerations.length) return;
+    if (!sessionGenerations.some((generation) => generation.id === selectedGenerationId)) setSelectedGenerationId(sessionGenerations.at(-1)?.id || "");
+  }, [sessionGenerations, selectedGenerationId]);
 
   if (!generations.length) {
     return <Card><CardContent className="p-6 text-sm text-slate-500">No generated applications yet.</CardContent></Card>;
@@ -445,57 +491,72 @@ function HistorySection({ generations }: { generations: Array<GenerationRecord> 
     <div className="grid gap-5 lg:grid-cols-[18rem_1fr]">
       <Card>
         <CardHeader>
-          <CardTitle>Companies</CardTitle>
-          <CardDescription>Select a company to browse generated applications.</CardDescription>
+          <CardTitle>Sessions</CardTitle>
+          <CardDescription>Select a job application to browse revisions.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          {companies.map((company) => (
-            <button
-              key={company}
-              type="button"
-              className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm font-semibold ${company === selectedCompany ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
-              onClick={() => {
-                setSelectedCompany(company);
-                setSelectedGenerationId(groups[company]?.[0]?.id || "");
-              }}
-            >
-              <span>{company}</span>
-              <span className={company === selectedCompany ? "text-slate-300" : "text-slate-400"}>{groups[company]?.length || 0}</span>
-            </button>
-          ))}
+          {sessions.map((session) => {
+            const latest = groups[session]?.at(-1);
+            const openComments = groups[session]?.reduce((total, generation) => total + generation.comments.filter((comment) => comment.status === "open").length, 0) || 0;
+            return (
+              <button
+                key={session}
+                type="button"
+                className={`w-full rounded-lg border px-3 py-2 text-left text-sm font-semibold ${session === selectedSession ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
+                onClick={() => {
+                  setSelectedSession(session);
+                  setSelectedGenerationId(groups[session]?.at(-1)?.id || "");
+                }}
+              >
+                <span className="block">{latest?.company_name || "Uncategorized"}</span>
+                <span className={session === selectedSession ? "text-slate-300" : "text-slate-400"}>{groups[session]?.length || 0} revision{groups[session]?.length === 1 ? "" : "s"}{openComments ? ` · ${openComments} open` : ""}</span>
+              </button>
+            );
+          })}
         </CardContent>
       </Card>
 
       <div className="space-y-4">
         <div className="flex gap-2 overflow-x-auto rounded-full bg-white/70 p-2 shadow-sm">
-          {companyGenerations.map((generation, index) => (
+          {sessionGenerations.map((generation) => (
             <TabButton key={generation.id} active={generation.id === selectedGeneration?.id} onClick={() => setSelectedGenerationId(generation.id)}>
-              {generationLabel(generation, index)}
+              {generationLabel(generation)}
             </TabButton>
           ))}
         </div>
-        {selectedGeneration ? <Generation generation={selectedGeneration} /> : null}
+        {selectedGeneration ? <Generation generation={selectedGeneration} addComment={addComment} requestRevision={requestRevision} revising={revising} /> : null}
       </div>
     </div>
   );
 }
 
-function generationLabel(generation: GenerationRecord, index: number) {
-  const date = generation.created_at.split(" ")[0] || `Output ${index + 1}`;
-  return generation.job_url ? `${date} · Link` : `${date} · Pasted`;
+function generationLabel(generation: GenerationRecord) {
+  const openComments = generation.comments.filter((comment) => comment.status === "open").length;
+  return `v${generation.revision_number || 1}${openComments ? ` · ${openComments} open` : ""}`;
 }
 
-function Generation({ generation }: { generation: GenerationRecord }) {
+type AddComment = (input: { generationId: string; documentKind: "cv" | "cover_letter"; anchorText: string; commentText: string }) => Promise<void>;
+
+function Generation({ generation, addComment, requestRevision, revising }: { generation: GenerationRecord; addComment: AddComment; requestRevision: (generationId: string) => Promise<void>; revising: boolean }) {
+  const openComments = generation.comments.filter((comment) => comment.status === "open");
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">{generation.company_name || "Uncategorized"}</CardTitle>
-        {generation.job_url ? <p className="text-sm font-medium text-slate-600">{generation.job_url}</p> : null}
-        <CardDescription>{generation.created_at} · {generation.model}</CardDescription>
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
+          <div>
+            <CardTitle className="text-lg">{generation.company_name || "Uncategorized"} · v{generation.revision_number || 1}</CardTitle>
+            {generation.job_url ? <p className="text-sm font-medium text-slate-600">{generation.job_url}</p> : null}
+            <CardDescription>{generation.created_at} · {generation.model}</CardDescription>
+          </div>
+          <Button type="button" className="gap-2" variant="secondary" disabled={revising || !openComments.length} onClick={() => requestRevision(generation.id)}>
+            <RefreshCw size={16} /> {revising ? "Revising..." : `Request revision${openComments.length ? ` (${openComments.length})` : ""}`}
+          </Button>
+        </div>
+        {!openComments.length ? <p className="text-sm text-slate-500">Add comments to specific blocks, then request a new revision.</p> : null}
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-2">
-        <Output title="Tailored CV" text={generation.generated_cv} documentId={generation.cv_document_id} />
-        <Output title="Cover letter" text={generation.generated_cover_letter} documentId={generation.cover_letter_document_id} />
+        <Output title="Tailored CV" documentKind="cv" generationId={generation.id} text={generation.generated_cv} documentId={generation.cv_document_id} companyName={generation.company_name} createdAt={generation.created_at} comments={generation.comments.filter((comment) => comment.document_kind === "cv")} addComment={addComment} />
+        <Output title="Cover letter" documentKind="cover_letter" generationId={generation.id} text={generation.generated_cover_letter} documentId={generation.cover_letter_document_id} companyName={generation.company_name} createdAt={generation.created_at} comments={generation.comments.filter((comment) => comment.document_kind === "cover_letter")} addComment={addComment} />
       </CardContent>
     </Card>
   );
@@ -513,9 +574,11 @@ const outputFormats: Array<{ value: OutputFormat; label: string; extension: stri
 ];
 const copyFormats = outputFormats.filter((format) => format.value === "markdown" || format.value === "text");
 
-function Output({ title, text, documentId }: { title: string; text: string; documentId: string | null }) {
+function Output({ title, documentKind, generationId, text, documentId, companyName, createdAt, comments, addComment }: { title: string; documentKind: "cv" | "cover_letter"; generationId: string; text: string; documentId: string | null; companyName?: string; createdAt?: string; comments: Array<GenerationComment>; addComment: AddComment }) {
   const [action, setAction] = useState<OutputAction | null>(null);
   const [status, setStatus] = useState("");
+  const [commentAnchor, setCommentAnchor] = useState("");
+  const [commentText, setCommentText] = useState("");
 
   useEffect(() => {
     if (!status.startsWith("Copied")) return;
@@ -525,7 +588,7 @@ function Output({ title, text, documentId }: { title: string; text: string; docu
 
   async function handleFormat(format: OutputFormat) {
     try {
-      const file = await outputFile(title, text, format);
+      const file = await outputFile(title, text, format, companyName, createdAt);
 
       if (action === "export") {
         downloadBlob(file.blob, file.filename);
@@ -541,6 +604,14 @@ function Output({ title, text, documentId }: { title: string; text: string; docu
     }
   }
 
+  async function submitComment() {
+    await addComment({ generationId, documentKind, anchorText: commentAnchor, commentText });
+    setCommentAnchor("");
+    setCommentText("");
+  }
+
+  const blocks = markdownBlocks(text);
+
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
@@ -552,10 +623,44 @@ function Output({ title, text, documentId }: { title: string; text: string; docu
         </div>
       </div>
       {status ? <p className={`rounded-full px-3 py-1 text-xs font-medium ${status.startsWith("Copied") ? "inline-block bg-emerald-50 text-emerald-700" : "text-slate-500"}`}>{status}</p> : null}
-      <pre className="max-h-96 overflow-auto whitespace-pre-wrap rounded-lg bg-slate-950 p-4 text-xs leading-5 text-slate-100">{text}</pre>
+      <div className="max-h-[42rem] space-y-2 overflow-auto rounded-lg bg-slate-950 p-3 text-xs leading-5 text-slate-100">
+        {blocks.map((block, index) => {
+          const blockComments = comments.filter((comment) => comment.anchor_text === block.text);
+          return (
+            <div key={`${block.text}-${index}`} className="rounded-md border border-transparent p-2 hover:border-slate-700 hover:bg-slate-900">
+              <pre className="whitespace-pre-wrap font-mono">{block.text}</pre>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" className="h-7 gap-1 border-slate-600 bg-slate-900 px-2 text-xs text-slate-100 hover:bg-slate-800" onClick={() => setCommentAnchor(block.text)}><MessageCircle size={13} /> Comment</Button>
+                {blockComments.map((comment) => (
+                  <span key={comment.id} className={`rounded-full px-2 py-1 text-[0.7rem] font-semibold ${comment.status === "open" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>{comment.status}: {comment.comment_text}</span>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {commentAnchor ? (
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="mb-2 text-xs font-bold tracking-wide text-slate-500 uppercase">Comment on selected block</p>
+          <blockquote className="mb-3 max-h-28 overflow-auto rounded-lg bg-slate-100 p-3 text-xs text-slate-700">{commentAnchor}</blockquote>
+          <Textarea className="min-h-28" value={commentText} onChange={(event) => setCommentText(event.target.value)} placeholder="Tell the AI what to change here..." />
+          <div className="mt-3 flex gap-2">
+            <Button type="button" disabled={!commentText.trim()} onClick={submitComment}>Save comment</Button>
+            <Button type="button" variant="ghost" onClick={() => { setCommentAnchor(""); setCommentText(""); }}>Cancel</Button>
+          </div>
+        </div>
+      ) : null}
       {action ? <OutputFormatModal action={action} onClose={() => setAction(null)} onSelect={handleFormat} /> : null}
     </section>
   );
+}
+
+function markdownBlocks(value: string) {
+  return value
+    .split(/\n{2,}/)
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .map((text) => ({ text }));
 }
 
 function OutputFormatModal(props: { action: OutputAction; onClose: () => void; onSelect: (format: OutputFormat) => void }) {
@@ -580,9 +685,12 @@ function OutputFormatModal(props: { action: OutputAction; onClose: () => void; o
   );
 }
 
-async function outputFile(title: string, markdown: string, format: OutputFormat): Promise<OutputFile> {
+async function outputFile(title: string, markdown: string, format: OutputFormat, companyName?: string, createdAt?: string): Promise<OutputFile> {
   const details = outputFormats.find((item) => item.value === format) || outputFormats[0]!;
-  const filename = `${slugifyFilename(title)}.${details.extension}`;
+  const datePart = createdAt ? createdAt.split(" ")[0] : "";
+  const companyPart = companyName ? slugifyFilename(companyName) : "";
+  const nameParts = [companyPart, datePart, slugifyFilename(title)].filter(Boolean);
+  const filename = `${nameParts.join("-")}.${details.extension}`;
   const body = format === "text" ? markdownToText(markdown) : markdown;
 
   if (format === "docx") return { ...details, filename, blob: await createDocx(title, body) };

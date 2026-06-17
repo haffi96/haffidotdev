@@ -23,6 +23,18 @@ export type AppData = {
   generations: Array<GenerationRecord>;
 };
 
+export type GenerationComment = {
+  id: string;
+  generation_id: string;
+  document_kind: "cv" | "cover_letter";
+  anchor_text: string;
+  comment_text: string;
+  status: "open" | "resolved";
+  resolved_by_generation_id: string | null;
+  created_at: string;
+  resolved_at: string | null;
+};
+
 export type DocumentRecord = {
   id: string;
   kind: string;
@@ -47,6 +59,9 @@ export type ExperienceEntry = {
 
 export type GenerationRecord = {
   id: string;
+  session_id: string | null;
+  revision_number: number;
+  parent_generation_id: string | null;
   company_name: string;
   job_url: string;
   job_description: string;
@@ -56,7 +71,10 @@ export type GenerationRecord = {
   cover_letter_document_id: string | null;
   model: string;
   created_at: string;
+  comments: Array<GenerationComment>;
 };
+
+type GenerationRow = Omit<GenerationRecord, "comments">;
 
 const emptyProfile: Profile = {
   full_name: "",
@@ -81,7 +99,8 @@ export async function getAppData(userId: string): Promise<AppData> {
   const instruction = await db.prepare("SELECT instructions FROM agent_instruction WHERE user_id = ?").bind(userId).first<{ instructions: string }>();
   const documents = await db.prepare("SELECT id, kind, filename, content_type, r2_key, size_bytes, parse_status, parse_error, created_at FROM document WHERE user_id = ? ORDER BY created_at DESC LIMIT 25").bind(userId).all<DocumentRecord>();
   const experienceEntries = await db.prepare("SELECT id, title, kind, content, sort_order, created_at, updated_at FROM experience_entry WHERE user_id = ? ORDER BY sort_order, created_at").bind(userId).all<ExperienceEntry>();
-  const generations = await db.prepare("SELECT id, company_name, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model, created_at FROM job_generation WHERE user_id = ? ORDER BY created_at DESC LIMIT 20").bind(userId).all<GenerationRecord>();
+  const generations = await db.prepare("SELECT id, session_id, revision_number, parent_generation_id, company_name, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model, created_at FROM job_generation WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").bind(userId).all<GenerationRow>();
+  const comments = await db.prepare("SELECT id, generation_id, document_kind, anchor_text, comment_text, status, resolved_by_generation_id, created_at, resolved_at FROM generation_comment WHERE user_id = ? ORDER BY created_at").bind(userId).all<GenerationComment>();
 
   return {
     profile: profile || emptyProfile,
@@ -89,7 +108,7 @@ export async function getAppData(userId: string): Promise<AppData> {
     experienceEntries: experienceEntries.results || [],
     instructions: instruction?.instructions || "",
     documents: documents.results || [],
-    generations: generations.results || []
+    generations: attachComments(generations.results || [], comments.results || [])
   };
 }
 
@@ -178,14 +197,27 @@ export async function getDocument(userId: string, documentId: string) {
     .first<DocumentRecord>();
 }
 
-export async function saveGeneration(userId: string, generation: Omit<GenerationRecord, "id" | "created_at">) {
+export async function createApplicationSession(userId: string, input: { company_name: string; job_url: string; job_description: string }) {
   const id = crypto.randomUUID();
   await getEnv().DB.prepare(
-    "INSERT INTO job_generation (id, user_id, company_name, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO job_application_session (id, user_id, company_name, job_url, job_description) VALUES (?, ?, ?, ?, ?)"
+  )
+    .bind(id, userId, input.company_name, input.job_url, input.job_description)
+    .run();
+  return id;
+}
+
+export async function saveGeneration(userId: string, generation: Omit<GenerationRow, "id" | "created_at">) {
+  const id = crypto.randomUUID();
+  await getEnv().DB.prepare(
+    "INSERT INTO job_generation (id, user_id, session_id, revision_number, parent_generation_id, company_name, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   )
     .bind(
       id,
       userId,
+      generation.session_id,
+      generation.revision_number,
+      generation.parent_generation_id,
       generation.company_name,
       generation.job_url,
       generation.job_description,
@@ -197,4 +229,53 @@ export async function saveGeneration(userId: string, generation: Omit<Generation
     )
     .run();
   return id;
+}
+
+export async function getGeneration(userId: string, generationId: string) {
+  const row = await getEnv().DB.prepare("SELECT id, session_id, revision_number, parent_generation_id, company_name, job_url, job_description, generated_cv, generated_cover_letter, cv_document_id, cover_letter_document_id, model, created_at FROM job_generation WHERE id = ? AND user_id = ?")
+    .bind(generationId, userId)
+    .first<GenerationRow>();
+  if (!row) return null;
+
+  const comments = await getEnv().DB.prepare("SELECT id, generation_id, document_kind, anchor_text, comment_text, status, resolved_by_generation_id, created_at, resolved_at FROM generation_comment WHERE generation_id = ? AND user_id = ? ORDER BY created_at")
+    .bind(generationId, userId)
+    .all<GenerationComment>();
+  return { ...row, comments: comments.results || [] };
+}
+
+export async function getOpenGenerationComments(userId: string, generationId: string) {
+  const comments = await getEnv().DB.prepare("SELECT id, generation_id, document_kind, anchor_text, comment_text, status, resolved_by_generation_id, created_at, resolved_at FROM generation_comment WHERE generation_id = ? AND user_id = ? AND status = 'open' ORDER BY created_at")
+    .bind(generationId, userId)
+    .all<GenerationComment>();
+  return comments.results || [];
+}
+
+export async function getNextRevisionNumber(userId: string, sessionId: string) {
+  const row = await getEnv().DB.prepare("SELECT COALESCE(MAX(revision_number), 0) + 1 AS next_revision_number FROM job_generation WHERE user_id = ? AND session_id = ?")
+    .bind(userId, sessionId)
+    .first<{ next_revision_number: number }>();
+  return row?.next_revision_number || 1;
+}
+
+export async function saveGenerationComment(userId: string, input: Pick<GenerationComment, "generation_id" | "document_kind" | "anchor_text" | "comment_text">) {
+  const id = crypto.randomUUID();
+  await getEnv().DB.prepare(
+    "INSERT INTO generation_comment (id, user_id, generation_id, document_kind, anchor_text, comment_text) VALUES (?, ?, ?, ?, ?, ?)"
+  )
+    .bind(id, userId, input.generation_id, input.document_kind, input.anchor_text, input.comment_text)
+    .run();
+  return id;
+}
+
+export async function resolveGenerationComments(userId: string, generationId: string, resolvedByGenerationId: string) {
+  await getEnv().DB.prepare("UPDATE generation_comment SET status = 'resolved', resolved_by_generation_id = ?, resolved_at = CURRENT_TIMESTAMP WHERE generation_id = ? AND user_id = ? AND status = 'open'")
+    .bind(resolvedByGenerationId, generationId, userId)
+    .run();
+}
+
+function attachComments(generations: Array<GenerationRow>, comments: Array<GenerationComment>) {
+  return generations.map((generation) => ({
+    ...generation,
+    comments: comments.filter((comment) => comment.generation_id === generation.id)
+  }));
 }

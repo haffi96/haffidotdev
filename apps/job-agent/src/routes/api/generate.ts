@@ -1,6 +1,6 @@
 import { fetchJobDescription, generateApplicationDocuments, tailoringModelName } from "#/lib/ai";
 import { requireUser } from "#/lib/auth";
-import { getAppData, saveDocument, saveGeneration } from "#/lib/db";
+import { createApplicationSession, getAppData, saveDocument, saveGeneration } from "#/lib/db";
 import { documentKey, putDocument } from "#/lib/documents";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -55,7 +55,16 @@ export const Route = createFileRoute("/api/generate")({
           size_bytes: new TextEncoder().encode(output.coverLetter).length
         });
 
+        const sessionId = await createApplicationSession(auth.user.id, {
+          company_name: companyName,
+          job_url: jobUrl,
+          job_description: jobDescription
+        });
+
         const generationId = await saveGeneration(auth.user.id, {
+          session_id: sessionId,
+          revision_number: 1,
+          parent_generation_id: null,
           company_name: companyName,
           job_url: jobUrl,
           job_description: jobDescription,

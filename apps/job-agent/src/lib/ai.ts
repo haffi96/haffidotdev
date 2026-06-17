@@ -1,7 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateText, Output } from "ai";
 import { z } from "zod";
-import type { AppData } from "./db";
+import type { AppData, GenerationComment, GenerationRecord } from "./db";
 import { getEnv } from "./env";
 
 const outputSchema = z.object({
@@ -81,6 +81,66 @@ ${jobUrl || "No URL provided."}
 
 Job description:
 ${jobDescription || "No job description provided."}`;
+
+  const openai = createOpenAI({ apiKey: getEnv().OPENAI_API_KEY });
+  const result = await generateText({
+    model: openai(tailoringModelName()),
+    output: Output.object({ schema: outputSchema }),
+    prompt
+  });
+
+  return result.output;
+}
+
+export async function reviseApplicationDocuments(input: {
+  appData: AppData;
+  generation: GenerationRecord;
+  comments: Array<GenerationComment>;
+}) {
+  const { appData, generation, comments } = input;
+  const prompt = `You are a precise job-application revision assistant.
+
+Your task:
+- Revise the user's tailored CV and cover letter using the review comments.
+- Return complete replacement Markdown for both documents, not a diff.
+- Resolve every open comment as well as possible while preserving factual accuracy.
+
+Hard rules:
+- Do not invent facts, tools, employers, dates, responsibilities, metrics, credentials, or outcomes.
+- Preserve the user's source material as the source of truth.
+- Keep the CV close to the prior version and original source material.
+- If a comment asks for unsupported claims, improve wording without adding unsupported facts.
+- Return Markdown.
+
+User profile:
+${JSON.stringify(appData.profile, null, 2)}
+
+Experience entries:
+${JSON.stringify(appData.experienceEntries.length ? appData.experienceEntries : safeJson(appData.sourceMaterial.achievements_json), null, 2)}
+
+Extra unchanged source notes:
+${appData.sourceMaterial.extra_notes || "No extra notes provided."}
+
+Additional user instructions:
+${appData.instructions || "No additional instructions provided."}
+
+Company:
+${generation.company_name}
+
+Job URL:
+${generation.job_url || "No URL provided."}
+
+Job description:
+${generation.job_description || "No job description provided."}
+
+Previous tailored CV:
+${generation.generated_cv}
+
+Previous cover letter:
+${generation.generated_cover_letter}
+
+Open review comments:
+${JSON.stringify(comments.map(({ document_kind, anchor_text, comment_text }) => ({ document: document_kind, anchor_text, comment: comment_text })), null, 2)}`;
 
   const openai = createOpenAI({ apiKey: getEnv().OPENAI_API_KEY });
   const result = await generateText({

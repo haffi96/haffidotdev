@@ -13,8 +13,10 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
+import { Route as ApiReviseRouteImport } from './routes/api/revise'
 import { Route as ApiParseCvRouteImport } from './routes/api/parse-cv'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
+import { Route as ApiCommentsRouteImport } from './routes/api/comments'
 import { Route as ApiAppDataRouteImport } from './routes/api/app-data'
 import { Route as ApiDocumentSplatRouteImport } from './routes/api/document/$'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -39,6 +41,11 @@ const ApiUploadRoute = ApiUploadRouteImport.update({
   path: '/api/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReviseRoute = ApiReviseRouteImport.update({
+  id: '/api/revise',
+  path: '/api/revise',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiParseCvRoute = ApiParseCvRouteImport.update({
   id: '/api/parse-cv',
   path: '/api/parse-cv',
@@ -47,6 +54,11 @@ const ApiParseCvRoute = ApiParseCvRouteImport.update({
 const ApiGenerateRoute = ApiGenerateRouteImport.update({
   id: '/api/generate',
   path: '/api/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCommentsRoute = ApiCommentsRouteImport.update({
+  id: '/api/comments',
+  path: '/api/comments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAppDataRoute = ApiAppDataRouteImport.update({
@@ -70,8 +82,10 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/login': typeof LoginRoute
   '/api/app-data': typeof ApiAppDataRoute
+  '/api/comments': typeof ApiCommentsRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/parse-cv': typeof ApiParseCvRoute
+  '/api/revise': typeof ApiReviseRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/document/$': typeof ApiDocumentSplatRoute
@@ -81,8 +95,10 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/login': typeof LoginRoute
   '/api/app-data': typeof ApiAppDataRoute
+  '/api/comments': typeof ApiCommentsRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/parse-cv': typeof ApiParseCvRoute
+  '/api/revise': typeof ApiReviseRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/document/$': typeof ApiDocumentSplatRoute
@@ -93,8 +109,10 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/login': typeof LoginRoute
   '/api/app-data': typeof ApiAppDataRoute
+  '/api/comments': typeof ApiCommentsRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/parse-cv': typeof ApiParseCvRoute
+  '/api/revise': typeof ApiReviseRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/document/$': typeof ApiDocumentSplatRoute
@@ -106,8 +124,10 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/api/app-data'
+    | '/api/comments'
     | '/api/generate'
     | '/api/parse-cv'
+    | '/api/revise'
     | '/api/upload'
     | '/api/auth/$'
     | '/api/document/$'
@@ -117,8 +137,10 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/api/app-data'
+    | '/api/comments'
     | '/api/generate'
     | '/api/parse-cv'
+    | '/api/revise'
     | '/api/upload'
     | '/api/auth/$'
     | '/api/document/$'
@@ -128,8 +150,10 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/api/app-data'
+    | '/api/comments'
     | '/api/generate'
     | '/api/parse-cv'
+    | '/api/revise'
     | '/api/upload'
     | '/api/auth/$'
     | '/api/document/$'
@@ -140,8 +164,10 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRoute
   LoginRoute: typeof LoginRoute
   ApiAppDataRoute: typeof ApiAppDataRoute
+  ApiCommentsRoute: typeof ApiCommentsRoute
   ApiGenerateRoute: typeof ApiGenerateRoute
   ApiParseCvRoute: typeof ApiParseCvRoute
+  ApiReviseRoute: typeof ApiReviseRoute
   ApiUploadRoute: typeof ApiUploadRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiDocumentSplatRoute: typeof ApiDocumentSplatRoute
@@ -177,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/revise': {
+      id: '/api/revise'
+      path: '/api/revise'
+      fullPath: '/api/revise'
+      preLoaderRoute: typeof ApiReviseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/parse-cv': {
       id: '/api/parse-cv'
       path: '/api/parse-cv'
@@ -189,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/api/generate'
       fullPath: '/api/generate'
       preLoaderRoute: typeof ApiGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/comments': {
+      id: '/api/comments'
+      path: '/api/comments'
+      fullPath: '/api/comments'
+      preLoaderRoute: typeof ApiCommentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/app-data': {
@@ -220,8 +260,10 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRoute,
   LoginRoute: LoginRoute,
   ApiAppDataRoute: ApiAppDataRoute,
+  ApiCommentsRoute: ApiCommentsRoute,
   ApiGenerateRoute: ApiGenerateRoute,
   ApiParseCvRoute: ApiParseCvRoute,
+  ApiReviseRoute: ApiReviseRoute,
   ApiUploadRoute: ApiUploadRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiDocumentSplatRoute: ApiDocumentSplatRoute,
