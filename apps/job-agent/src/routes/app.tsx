@@ -1,4 +1,5 @@
 import { Field } from "#/components/Field";
+import { ThemeToggle } from "#/components/ThemeToggle";
 import { Button } from "#/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/ui/card";
 import { Input } from "#/components/ui/input";
@@ -198,32 +199,35 @@ function App() {
   }
 
   if (!data) {
-    return <main className="grid min-h-screen place-items-center bg-slate-100 text-slate-700">Loading workspace...</main>;
+    return <main className="grid min-h-screen place-items-center bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-300">Loading workspace...</main>;
   }
 
   const latestGeneration = data.generations[0];
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc,#e0f2fe)] px-4 py-6 md:px-8">
+    <main className="min-h-screen bg-[linear-gradient(135deg,#f8fafc,#e0f2fe)] px-4 py-6 dark:bg-[linear-gradient(135deg,#020617,#0f172a)] md:px-8">
       <section className="mx-auto w-full max-w-7xl space-y-6">
-        <header className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-sm md:flex-row md:items-center">
+        <header className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/85 md:flex-row md:items-center">
           <div>
-            <p className="font-mono text-xs font-bold tracking-[0.2em] text-slate-500 uppercase">jobs.haffi.dev</p>
-            <h1 className="text-3xl font-black tracking-[-0.04em] text-slate-950 md:text-5xl">Application agent</h1>
+            <p className="font-mono text-xs font-bold tracking-[0.2em] text-slate-500 uppercase dark:text-slate-400">jobs.haffi.dev</p>
+            <h1 className="text-3xl font-black tracking-[-0.04em] text-slate-950 dark:text-slate-100 md:text-5xl">Application agent</h1>
           </div>
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={async () => {
-              await authClient.signOut();
-              await navigate({ to: "/login" });
-            }}
-          >
-            <LogOut size={16} /> Sign out
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={async () => {
+                await authClient.signOut();
+                await navigate({ to: "/login" });
+              }}
+            >
+              <LogOut size={16} /> Sign out
+            </Button>
+          </div>
         </header>
 
-        <div className="flex gap-2 overflow-x-auto rounded-full bg-white/70 p-2 shadow-sm">
+        <div className="flex gap-2 overflow-x-auto rounded-full bg-white/70 p-2 shadow-sm dark:bg-slate-900/70">
           {tabs.map((item) => (
             <TabButton key={item} active={tab === item} onClick={() => selectTab(item)}>
               {item.charAt(0).toUpperCase() + item.slice(1)}
@@ -231,7 +235,7 @@ function App() {
           ))}
         </div>
 
-        {message ? <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm font-medium text-slate-700">{message}</p> : null}
+        {message ? <p className="rounded-lg border border-slate-200 bg-white p-3 text-sm font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">{message}</p> : null}
 
         {tab === "profile" ? <ProfileSection data={data} setData={setData} save={save} saving={saving} /> : null}
         {tab === "materials" ? <MaterialsSection data={data} setData={setData} save={save} saving={saving} uploadFile={uploadFile} parseDocument={parseDocument} /> : null}
@@ -344,11 +348,11 @@ function MaterialsSection(props: { data: AppData; setData: (data: AppData) => vo
         </CardHeader>
         <CardContent className="space-y-4">
           {sourceCv?.content_type === "application/pdf" ? (
-            <iframe title="Uploaded CV preview" src={`/api/document/${sourceCv.id}?disposition=inline`} className="h-[620px] w-full rounded-lg border border-slate-200 bg-slate-50" />
+            <iframe title="Uploaded CV preview" src={`/api/document/${sourceCv.id}?disposition=inline`} className="h-[620px] w-full rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950" />
           ) : sourceCv ? (
-            <a href={`/api/document/${sourceCv.id}`} className="block rounded-lg border border-slate-200 p-4 text-sm font-semibold text-slate-700 underline">Download uploaded CV: {sourceCv.filename}</a>
+            <a href={`/api/document/${sourceCv.id}`} className="block rounded-lg border border-slate-200 p-4 text-sm font-semibold text-slate-700 underline dark:border-slate-800 dark:text-slate-300">Download uploaded CV: {sourceCv.filename}</a>
           ) : (
-            <div className="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500">Upload a PDF CV to preview it here.</div>
+            <div className="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">Upload a PDF CV to preview it here.</div>
           )}
           <Field label="Extra notes"><Textarea value={sourceMaterial.extra_notes} onChange={(event) => update("extra_notes", event.target.value)} /></Field>
           <div className="flex flex-wrap gap-3">
@@ -356,18 +360,18 @@ function MaterialsSection(props: { data: AppData; setData: (data: AppData) => vo
             <Button disabled={props.saving} onClick={() => props.save({ sourceMaterial, experienceEntries: props.data.experienceEntries })}>{props.saving ? "Saving..." : "Save materials"}</Button>
           </div>
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-slate-950">Experience</h3>
+            <h3 className="text-lg font-semibold text-slate-950 dark:text-slate-100">Experience</h3>
             {props.data.experienceEntries.length ? props.data.experienceEntries.map((entry) => (
-              <details key={entry.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4" open>
-                <summary className="cursor-pointer font-semibold text-slate-950">{entry.title || "Untitled entry"}</summary>
+              <details key={entry.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950" open>
+                <summary className="cursor-pointer font-semibold text-slate-950 dark:text-slate-100">{entry.title || "Untitled entry"}</summary>
                 <div className="mt-4 grid gap-3">
                   <Field label="Heading"><Input value={entry.title} onChange={(event) => updateExperience(entry.id, { title: event.target.value })} /></Field>
                   <Field label="Type"><Input value={entry.kind} onChange={(event) => updateExperience(entry.id, { kind: event.target.value })} placeholder="job, project, or other" /></Field>
                   <Field label="Rich text"><Textarea className="min-h-44" value={entry.content} onChange={(event) => updateExperience(entry.id, { content: event.target.value })} /></Field>
-                  <Button variant="ghost" className="justify-self-start text-red-700" onClick={() => deleteExperience(entry.id)}>Delete entry</Button>
+                  <Button variant="ghost" className="justify-self-start text-red-700 dark:text-red-300" onClick={() => deleteExperience(entry.id)}>Delete entry</Button>
                 </div>
               </details>
-            )) : <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No experience entries yet. Upload a CV to parse entries or add one manually.</p>}
+            )) : <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">No experience entries yet. Upload a CV to parse entries or add one manually.</p>}
           </div>
         </CardContent>
       </Card>
@@ -384,18 +388,18 @@ function MaterialsSection(props: { data: AppData; setData: (data: AppData) => vo
           </form>
           <div className="space-y-2">
             {uploadedDocuments.map((document) => (
-              <div key={document.id} className="rounded-lg border border-slate-200 p-3 text-sm hover:bg-slate-50">
+              <div key={document.id} className="rounded-lg border border-slate-200 p-3 text-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-950">
                 <a href={`/api/document/${document.id}`} className="block">
-                  <span className="font-semibold text-slate-950">{document.filename}</span>
-                  <span className="block text-slate-500">{document.kind} · {Math.ceil(document.size_bytes / 1024)} KB · {document.parse_status}</span>
-                  {document.parse_error ? <span className="block text-red-600">{document.parse_error}</span> : null}
+                  <span className="font-semibold text-slate-950 dark:text-slate-100">{document.filename}</span>
+                  <span className="block text-slate-500 dark:text-slate-400">{document.kind} · {Math.ceil(document.size_bytes / 1024)} KB · {document.parse_status}</span>
+                  {document.parse_error ? <span className="block text-red-600 dark:text-red-300">{document.parse_error}</span> : null}
                 </a>
                 {document.kind === "source_cv" && document.parse_status !== "parsed" ? (
                   <Button type="button" variant="outline" className="mt-3" onClick={() => props.parseDocument(document.id)}>{document.parse_status === "parsing" ? "Restart parse" : "Retry parse"}</Button>
                 ) : null}
               </div>
             ))}
-            {!uploadedDocuments.length ? <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No uploaded documents yet.</p> : null}
+            {!uploadedDocuments.length ? <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">No uploaded documents yet.</p> : null}
           </div>
         </CardContent>
       </Card>
@@ -454,7 +458,7 @@ function GenerateSection(props: {
           <CardDescription>Downloads are stored in R2 as Markdown files.</CardDescription>
         </CardHeader>
         <CardContent>
-          {props.latestGeneration ? <Generation generation={props.latestGeneration} addComment={props.addComment} requestRevision={props.requestRevision} revising={props.revising} /> : <p className="text-sm text-slate-500">No generations yet.</p>}
+          {props.latestGeneration ? <Generation generation={props.latestGeneration} addComment={props.addComment} requestRevision={props.requestRevision} revising={props.revising} /> : <p className="text-sm text-slate-500 dark:text-slate-400">No generations yet.</p>}
         </CardContent>
       </Card>
     </div>
@@ -484,7 +488,7 @@ function HistorySection({ generations, addComment, requestRevision, revising }: 
   }, [sessionGenerations, selectedGenerationId]);
 
   if (!generations.length) {
-    return <Card><CardContent className="p-6 text-sm text-slate-500">No generated applications yet.</CardContent></Card>;
+    return <Card><CardContent className="p-6 text-sm text-slate-500 dark:text-slate-400">No generated applications yet.</CardContent></Card>;
   }
 
   return (
@@ -502,14 +506,14 @@ function HistorySection({ generations, addComment, requestRevision, revising }: 
               <button
                 key={session}
                 type="button"
-                className={`w-full rounded-lg border px-3 py-2 text-left text-sm font-semibold ${session === selectedSession ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
+                className={`w-full rounded-lg border px-3 py-2 text-left text-sm font-semibold ${session === selectedSession ? "border-slate-950 bg-slate-950 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-950" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"}`}
                 onClick={() => {
                   setSelectedSession(session);
                   setSelectedGenerationId(groups[session]?.at(-1)?.id || "");
                 }}
               >
                 <span className="block">{latest?.company_name || "Uncategorized"}</span>
-                <span className={session === selectedSession ? "text-slate-300" : "text-slate-400"}>{groups[session]?.length || 0} revision{groups[session]?.length === 1 ? "" : "s"}{openComments ? ` · ${openComments} open` : ""}</span>
+                <span className={session === selectedSession ? "text-slate-300 dark:text-slate-600" : "text-slate-400"}>{groups[session]?.length || 0} revision{groups[session]?.length === 1 ? "" : "s"}{openComments ? ` · ${openComments} open` : ""}</span>
               </button>
             );
           })}
@@ -517,7 +521,7 @@ function HistorySection({ generations, addComment, requestRevision, revising }: 
       </Card>
 
       <div className="space-y-4">
-        <div className="flex gap-2 overflow-x-auto rounded-full bg-white/70 p-2 shadow-sm">
+        <div className="flex gap-2 overflow-x-auto rounded-full bg-white/70 p-2 shadow-sm dark:bg-slate-900/70">
           {sessionGenerations.map((generation) => (
             <TabButton key={generation.id} active={generation.id === selectedGeneration?.id} onClick={() => setSelectedGenerationId(generation.id)}>
               {generationLabel(generation)}
@@ -545,14 +549,14 @@ function Generation({ generation, addComment, requestRevision, revising }: { gen
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
           <div>
             <CardTitle className="text-lg">{generation.company_name || "Uncategorized"} · v{generation.revision_number || 1}</CardTitle>
-            {generation.job_url ? <p className="text-sm font-medium text-slate-600">{generation.job_url}</p> : null}
+            {generation.job_url ? <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{generation.job_url}</p> : null}
             <CardDescription>{generation.created_at} · {generation.model}</CardDescription>
           </div>
           <Button type="button" className="gap-2" variant="secondary" disabled={revising || !openComments.length} onClick={() => requestRevision(generation.id)}>
             <RefreshCw size={16} /> {revising ? "Revising..." : `Request revision${openComments.length ? ` (${openComments.length})` : ""}`}
           </Button>
         </div>
-        {!openComments.length ? <p className="text-sm text-slate-500">Add comments to specific blocks, then request a new revision.</p> : null}
+        {!openComments.length ? <p className="text-sm text-slate-500 dark:text-slate-400">Add comments to specific blocks, then request a new revision.</p> : null}
       </CardHeader>
       <CardContent className="grid gap-4 lg:grid-cols-2">
         <Output title="Tailored CV" documentKind="cv" generationId={generation.id} text={generation.generated_cv} documentId={generation.cv_document_id} companyName={generation.company_name} createdAt={generation.created_at} comments={generation.comments.filter((comment) => comment.document_kind === "cv")} addComment={addComment} />
@@ -615,14 +619,14 @@ function Output({ title, documentKind, generationId, text, documentId, companyNa
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="font-semibold text-slate-950">{title}</h3>
+        <h3 className="font-semibold text-slate-950 dark:text-slate-100">{title}</h3>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Button type="button" variant="outline" className="gap-1" onClick={() => setAction("copy")}><Copy size={14} /> Copy as</Button>
           <Button type="button" variant="outline" className="gap-1" onClick={() => setAction("export")}><FileDown size={14} /> Export as</Button>
-          {documentId ? <a href={`/api/document/${documentId}`} className="inline-flex items-center gap-1 text-sm font-semibold text-slate-700 underline"><Download size={14} /> Stored MD</a> : null}
+          {documentId ? <a href={`/api/document/${documentId}`} className="inline-flex items-center gap-1 text-sm font-semibold text-slate-700 underline dark:text-slate-300"><Download size={14} /> Stored MD</a> : null}
         </div>
       </div>
-      {status ? <p className={`rounded-full px-3 py-1 text-xs font-medium ${status.startsWith("Copied") ? "inline-block bg-emerald-50 text-emerald-700" : "text-slate-500"}`}>{status}</p> : null}
+      {status ? <p className={`rounded-full px-3 py-1 text-xs font-medium ${status.startsWith("Copied") ? "inline-block bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-200" : "text-slate-500 dark:text-slate-400"}`}>{status}</p> : null}
       <div className="max-h-[42rem] space-y-2 overflow-auto rounded-lg bg-slate-950 p-3 text-xs leading-5 text-slate-100">
         {blocks.map((block, index) => {
           const blockComments = comments.filter((comment) => comment.anchor_text === block.text);
@@ -640,9 +644,9 @@ function Output({ title, documentKind, generationId, text, documentId, companyNa
         })}
       </div>
       {commentAnchor ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="mb-2 text-xs font-bold tracking-wide text-slate-500 uppercase">Comment on selected block</p>
-          <blockquote className="mb-3 max-h-28 overflow-auto rounded-lg bg-slate-100 p-3 text-xs text-slate-700">{commentAnchor}</blockquote>
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <p className="mb-2 text-xs font-bold tracking-wide text-slate-500 uppercase dark:text-slate-400">Comment on selected block</p>
+          <blockquote className="mb-3 max-h-28 overflow-auto rounded-lg bg-slate-100 p-3 text-xs text-slate-700 dark:bg-slate-950 dark:text-slate-300">{commentAnchor}</blockquote>
           <Textarea className="min-h-28" value={commentText} onChange={(event) => setCommentText(event.target.value)} placeholder="Tell the AI what to change here..." />
           <div className="mt-3 flex gap-2">
             <Button type="button" disabled={!commentText.trim()} onClick={submitComment}>Save comment</Button>
@@ -667,11 +671,11 @@ function OutputFormatModal(props: { action: OutputAction; onClose: () => void; o
   const formats = props.action === "copy" ? copyFormats : outputFormats;
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 px-4" role="dialog" aria-modal="true" aria-label={props.action === "copy" ? "Copy as" : "Export as"}>
-      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
+      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-slate-900">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-black text-slate-950">{props.action === "copy" ? "Copy as" : "Export as"}</h2>
-            <p className="text-sm text-slate-500">Choose the format for this output.</p>
+            <h2 className="text-lg font-black text-slate-950 dark:text-slate-100">{props.action === "copy" ? "Copy as" : "Export as"}</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Choose the format for this output.</p>
           </div>
           <Button type="button" variant="ghost" onClick={props.onClose}>Close</Button>
         </div>
