@@ -1,28 +1,108 @@
+import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import avatarUrl from "../media/avatar.png?url";
+import { profile } from "../lib/profile";
 import { ThemeToggle } from "./ThemeToggle";
 
+const links = [
+  { to: "/", label: "home", exact: true },
+  { to: "/projects", label: "projects", exact: false },
+  { to: "/blogs", label: "blogs", exact: false }
+] as const;
+
 export function Nav() {
+  const [open, setOpen] = useState(false);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const isActive = (to: string, exact: boolean) => (exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`));
+
   return (
-    <nav className="mt-10 flex flex-col items-center justify-center text-center">
-      <div className="flex flex-col sm:flex-row sm:space-x-5">
-        <a className="uppercase no-underline hover:text-zinc-400" href="/">Home</a>
-        <a className="uppercase no-underline hover:text-zinc-400" href="/projects">Projects</a>
-        <a className="uppercase no-underline hover:text-zinc-400" href="/blogs">Blogs</a>
-        <a className="uppercase no-underline hover:text-zinc-400" href="/resume.pdf">Resume</a>
-      </div>
-      <br />
-      <div className="flex flex-row space-x-5">
-        <a aria-label="LinkedIn" href="https://www.linkedin.com/in/haffimazhar">
-          <svg className="block size-5 dark:fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-            <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 0 1 .016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z" />
-          </svg>
-        </a>
-        <a aria-label="GitHub" href="https://github.com/haffi96">
-          <svg className="block size-5 dark:fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
-          </svg>
-        </a>
-      </div>
-      <ThemeToggle />
-    </nav>
+    <header className="sticky top-0 z-40 border-b border-zinc-300/70 bg-zinc-100/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/80">
+      <nav aria-label="Main" className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-5 sm:px-8">
+        <Link to="/" className="group flex items-center gap-2.5 no-underline">
+          <img src={avatarUrl} alt="" className="size-7 rounded-full object-cover ring-1 ring-zinc-300 dark:ring-zinc-700" />
+          <span className="font-mono text-sm font-medium">
+            haffi<span className="text-zinc-500">.dev</span>{" "}
+            <span className="text-amber-600 dark:text-amber-400">:)</span>
+          </span>
+        </Link>
+
+        <div className="hidden items-center gap-1 md:flex">
+          {links.map((link) => (
+            <NavLink key={link.to} to={link.to} active={isActive(link.to, link.exact)}>
+              {link.label}
+            </NavLink>
+          ))}
+          <a
+            href={profile.links.resume}
+            className="rounded-md px-3 py-1.5 font-mono text-sm text-zinc-600 no-underline hover:bg-zinc-200 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white"
+          >
+            resume
+          </a>
+          <span aria-hidden className="mx-2 h-5 w-px bg-zinc-300 dark:bg-zinc-800" />
+          <ThemeToggle />
+        </div>
+
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="inline-flex size-9 items-center justify-center rounded-md text-zinc-700 hover:bg-zinc-200 dark:text-zinc-300 dark:hover:bg-zinc-900"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            onClick={() => setOpen((current) => !current)}
+          >
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+              {open ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
+        </div>
+      </nav>
+
+      {open ? (
+        <div id="mobile-menu" className="border-t border-zinc-300/70 md:hidden dark:border-zinc-800/80">
+          <div className="mx-auto flex max-w-5xl flex-col px-5 py-3 sm:px-8">
+            {links.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`rounded-md px-3 py-2.5 font-mono text-sm no-underline ${
+                  isActive(link.to, link.exact)
+                    ? "bg-zinc-200 text-zinc-950 dark:bg-zinc-900 dark:text-white"
+                    : "text-zinc-600 dark:text-zinc-400"
+                }`}
+              >
+                <span className="text-amber-600 dark:text-amber-400">~/</span>
+                {link.label}
+              </Link>
+            ))}
+            <a href={profile.links.resume} className="rounded-md px-3 py-2.5 font-mono text-sm text-zinc-600 no-underline dark:text-zinc-400">
+              <span className="text-amber-600 dark:text-amber-400">~/</span>resume.pdf
+            </a>
+          </div>
+        </div>
+      ) : null}
+    </header>
+  );
+}
+
+function NavLink({ to, active, children }: Readonly<{ to: string; active: boolean; children: React.ReactNode }>) {
+  return (
+    <Link
+      to={to}
+      aria-current={active ? "page" : undefined}
+      className={`rounded-md px-3 py-1.5 font-mono text-sm no-underline transition-colors ${
+        active
+          ? "bg-zinc-200 text-zinc-950 dark:bg-zinc-900 dark:text-white"
+          : "text-zinc-600 hover:bg-zinc-200 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white"
+      }`}
+    >
+      {children}
+    </Link>
   );
 }

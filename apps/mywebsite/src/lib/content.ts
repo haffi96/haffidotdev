@@ -137,3 +137,28 @@ function parseFrontmatterValue(value: string) {
   }
   return unquoted;
 }
+
+// Techstack frontmatter looks like "( Typescript, NextJS ) =>". Return the individual items.
+export function parseTechstack(techstack: string) {
+  return techstack
+    .replace(/^\s*\(\s*/, "")
+    .replace(/\s*\)\s*=>\s*$/, "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function readingTime(body: string) {
+  const words = body.replace(/```[\s\S]*?```/g, " ").split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220));
+}
+
+export const categoryLabels: Record<string, string> = {
+  networking: "Networking",
+  database: "Databases",
+  general: "General"
+};
+
+export function categoryLabel(category: string) {
+  return categoryLabels[category] ?? category.charAt(0).toUpperCase() + category.slice(1);
+}

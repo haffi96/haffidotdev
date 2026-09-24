@@ -3,7 +3,21 @@ import { prepareMarkdown } from "../lib/content";
 export function MarkdownContent({ body }: Readonly<{ body: string }>) {
   return (
     <div
-      className="prose max-w-none leading-7 text-black dark:prose-invert dark:text-zinc-300 prose-headings:mt-8 prose-headings:mb-4 prose-headings:font-bold prose-headings:text-black dark:prose-headings:text-white prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-p:my-4 prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6 prose-li:my-1 prose-a:text-black prose-a:underline dark:prose-a:text-white prose-code:rounded prose-code:bg-zinc-300 prose-code:px-1 prose-code:py-0.5 prose-code:text-slate-700 prose-code:before:content-none prose-code:after:content-none dark:prose-code:bg-zinc-800 dark:prose-code:text-zinc-200 prose-pre:my-4 prose-pre:overflow-x-auto prose-pre:rounded-lg prose-pre:bg-zinc-950 prose-pre:p-4 prose-pre:text-zinc-100 prose-img:my-6 prose-img:max-w-full prose-img:rounded-lg prose-img:bg-white prose-table:my-4 prose-table:w-full prose-table:border-collapse prose-table:overflow-hidden prose-table:rounded-lg prose-table:text-left prose-th:border prose-th:border-zinc-400 prose-th:px-3 prose-th:py-2 prose-td:border prose-td:border-zinc-400 prose-td:px-3 prose-td:py-2 dark:prose-th:border-zinc-700 dark:prose-td:border-zinc-700"
+      className={[
+        "prose prose-zinc max-w-none break-words dark:prose-invert sm:prose-lg",
+        "prose-p:leading-[1.8] prose-li:my-1 prose-li:marker:text-zinc-400",
+        "prose-headings:scroll-mt-20 prose-headings:font-semibold prose-headings:tracking-tight",
+        "prose-h1:mt-12 prose-h1:mb-4 prose-h1:text-2xl prose-h2:mt-12 prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg",
+        "prose-a:font-medium prose-a:underline prose-a:decoration-amber-500/60 prose-a:underline-offset-4 hover:prose-a:decoration-amber-500",
+        "prose-strong:font-semibold",
+        "prose-code:rounded-md prose-code:border prose-code:border-zinc-300 prose-code:bg-white prose-code:px-1.5 prose-code:py-0.5 prose-code:font-mono prose-code:text-[0.85em] prose-code:font-normal prose-code:before:content-none prose-code:after:content-none",
+        "dark:prose-code:border-zinc-800 dark:prose-code:bg-zinc-900",
+        "prose-pre:overflow-x-auto prose-pre:rounded-xl prose-pre:border prose-pre:border-zinc-800 prose-pre:bg-zinc-950 prose-pre:font-mono prose-pre:text-sm prose-pre:leading-relaxed prose-pre:text-zinc-100",
+        "[&_pre_code]:border-0 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-inherit",
+        "prose-img:mx-auto prose-img:rounded-xl prose-img:border prose-img:border-zinc-300 prose-img:bg-white prose-img:p-2 dark:prose-img:border-zinc-800",
+        "prose-hr:border-zinc-300 dark:prose-hr:border-zinc-800",
+        "[&_.table-scroll]:my-6 [&_.table-scroll]:overflow-x-auto prose-table:my-0 prose-table:text-sm prose-th:font-mono prose-th:text-xs prose-th:font-medium prose-td:font-mono prose-td:text-xs"
+      ].join(" ")}
       dangerouslySetInnerHTML={{ __html: markdownToHtml(prepareMarkdown(body)) }}
     />
   );
@@ -15,6 +29,29 @@ function markdownToHtml(markdown: string) {
   let paragraph: string[] = [];
   let listType: "ul" | "ol" | null = null;
   let codeBlock: string[] | null = null;
+  let table: string[] = [];
+
+  const flushTable = () => {
+    if (table.length === 0) {
+      return;
+    }
+    const rows = table
+      .filter((row) => !/^\|?[\s:|-]+\|?$/.test(row))
+      .map((row) =>
+        row
+          .replace(/^\|/, "")
+          .replace(/\|$/, "")
+          .split("|")
+          .map((cell) => inline(cell.trim()))
+      );
+    const [head, ...body] = rows;
+    html.push(
+      `<div class="table-scroll"><table><thead><tr>${(head ?? []).map((cell) => `<th>${cell}</th>`).join("")}</tr></thead><tbody>${body
+        .map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`)
+        .join("")}</tbody></table></div>`
+    );
+    table = [];
+  };
 
   const flushParagraph = () => {
     if (paragraph.length > 0) {
@@ -32,6 +69,7 @@ function markdownToHtml(markdown: string) {
 
   for (const line of lines) {
     if (line.startsWith("```")) {
+      flushTable();
       flushParagraph();
       closeList();
       if (codeBlock) {
@@ -49,6 +87,14 @@ function markdownToHtml(markdown: string) {
     }
 
     const trimmed = line.trim();
+
+    if (trimmed.startsWith("|")) {
+      flushParagraph();
+      closeList();
+      table.push(trimmed);
+      continue;
+    }
+    flushTable();
 
     if (!trimmed) {
       flushParagraph();
@@ -109,6 +155,7 @@ function markdownToHtml(markdown: string) {
 
   flushParagraph();
   closeList();
+  flushTable();
 
   if (codeBlock) {
     html.push(`<pre><code>${escapeHtml(codeBlock.join("\n"))}</code></pre>`);
