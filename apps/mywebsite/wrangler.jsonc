@@ -13,5 +13,13 @@
   ],
   "observability": {
     "enabled": true
+  },
+  "env": {
+    // PR previews: CI deploys one Worker per PR to pr-<N>.preview.haffi.dev.
+    // Routes must stay empty so a preview can never claim haffi.dev.
+    "preview": {
+      "routes": [],
+      "workers_dev": false
+    }
   }
 }
