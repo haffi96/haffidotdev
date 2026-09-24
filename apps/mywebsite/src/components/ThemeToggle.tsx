@@ -1,38 +1,42 @@
 import { useEffect, useState } from "react";
 
+type Theme = "light" | "dark";
+
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem("theme");
-    const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    setTheme(storedTheme === "dark" || storedTheme === "light" ? storedTheme : preferredTheme);
+    setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
   }, []);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    window.localStorage.setItem("theme", theme);
-  }, [theme]);
+  function toggle() {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    document.documentElement.classList.toggle("dark", next === "dark");
+    window.localStorage.setItem("theme", next);
+    setTheme(next);
+  }
 
   return (
     <button
-      className="p-5"
+      className="grid size-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-tile-2 hover:text-fg"
       type="button"
-      aria-label="Toggle color theme"
-      onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      onClick={toggle}
     >
-      {theme === "light" ? <MoonIcon /> : <SunIcon />}
+      {/* Both icons render on the server; CSS picks the right one to avoid a flash. */}
+      <SunIcon />
+      <MoonIcon />
     </button>
   );
 }
 
 function SunIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="orange">
+    <svg className="hidden size-[18px] dark:block" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <circle cx="10" cy="10" r="3.5" />
       <path
-        fillRule="evenodd"
-        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-        clipRule="evenodd"
+        d="M10 2v1.5M10 16.5V18M2 10h1.5M16.5 10H18M4.3 4.3l1.1 1.1M14.6 14.6l1.1 1.1M4.3 15.7l1.1-1.1M14.6 5.4l1.1-1.1"
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -40,8 +44,8 @@ function SunIcon() {
 
 function MoonIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="orange">
-      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+    <svg className="block size-[18px] dark:hidden" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <path d="M16.5 12.2A6.8 6.8 0 0 1 7.8 3.5a6.8 6.8 0 1 0 8.7 8.7Z" strokeLinejoin="round" />
     </svg>
   );
 }

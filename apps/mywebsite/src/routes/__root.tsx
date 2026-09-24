@@ -1,23 +1,26 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { HeadContent, Link, Scripts, createRootRoute } from "@tanstack/react-router";
 import appCss from "../styles.css?url";
+import { ArrowLeft } from "../components/Icons";
 import { Page } from "../components/Page";
+import { Tile } from "../components/Tile";
+import { profile } from "../lib/profile";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "description", content: "The personal site of Haffi Mazhar" },
-      { title: "Haffi Mazhar" }
+      { name: "description", content: profile.summary },
+      { title: profile.name }
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@200;400;700;900&display=swap"
+        href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
       }
     ]
   }),
@@ -27,7 +30,7 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -46,8 +49,34 @@ function RootDocument({ children }: Readonly<{ children: React.ReactNode }>) {
 
 function NotFound() {
   return (
-    <Page className="p-20 text-center">
-      <h1>Listen... I messed up. This is an error page</h1>
+    <Page>
+      <div className="bento">
+        <Tile className="flex min-h-[22rem] flex-col items-start justify-between gap-10 p-6 sm:p-10 md:col-span-2 lg:col-span-3">
+          <p className="eyebrow">Error 404</p>
+          <div>
+            <p className="font-mono text-7xl font-medium tracking-tighter sm:text-9xl">
+              <span className="gradient-text">404</span>
+            </p>
+            <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">Listen... I messed up.</h1>
+            <p className="mt-2 max-w-md text-fg-2">This page doesn't exist, or it moved somewhere lower latency.</p>
+          </div>
+          <Link to="/" className="btn btn-primary">
+            <ArrowLeft className="size-4" /> Back home
+          </Link>
+        </Tile>
+        <div className="grid gap-3 md:col-span-2 md:grid-cols-2 md:gap-4 lg:col-span-1 lg:grid-cols-1">
+          <Tile index={1} interactive className="flex flex-col justify-between gap-6 p-6">
+            <Link to="/projects" className="stretched" aria-label="Projects" />
+            <p className="eyebrow">Browse</p>
+            <p className="text-xl font-semibold tracking-tight">Projects</p>
+          </Tile>
+          <Tile index={2} interactive className="flex flex-col justify-between gap-6 p-6">
+            <Link to="/blogs" className="stretched" aria-label="Writing" />
+            <p className="eyebrow">Read</p>
+            <p className="text-xl font-semibold tracking-tight">Writing</p>
+          </Tile>
+        </div>
+      </div>
     </Page>
   );
 }
