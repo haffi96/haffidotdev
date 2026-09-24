@@ -39,3 +39,6 @@ jobs:
 
       - name: Deploy TanStack app
         run: pnpm deploy:tanstack
+
+      - name: Deploy mywebsite app
+        run: pnpm deploy:mywebsite
