@@ -11,7 +11,7 @@ export const profile = {
     resume: "/resume.pdf"
   },
   summary:
-    "Software engineer with 7+ years in backend development and real-time systems. I build FastAPI services and cloud infrastructure, tune Python services for performance, and test reliability at very high scale. Currently building low-latency teleoperation for autonomous vehicles at Oxa."
+    "Software engineer with 7+ years in backend development and real-time systems. I build FastAPI services and cloud infrastructure, tune Python services for performance, and test reliability at very high scale. Currently building low-latency teleoperation for autonomous vehicles at Oxa, and previously founding engineer on a consumer sports platform."
 };
 
 export type Role = {
@@ -33,12 +33,25 @@ export const experience: Role[] = [
     location: "Oxford, UK",
     highlights: [
       "Architected and built multi-client video streaming and remote control with WebRTC, enabling fleet-wide teleoperation across regions and AV platforms.",
-      "Achieved sub-200ms video latency and under 50ms bidirectional messaging latency using WebRTC (H.264/VP9 over UDP) and network pipeline optimisations across fibre, 4G and Starlink.",
+      "Achieved sub-200ms video latency and under 50ms bidirectional messaging latency using WebRTC (H.264/VP9 over UDP) across fibre, 4G and Starlink.",
       "Deployed a real-time WebSocket service on GCP Cloud Run with FastAPI, Redis and Cloud SQL, scaling to concurrent vehicle/operator sessions with strong connection reliability.",
-      "Provisioned GCP Cloud SQL, Redis and Pub/Sub infrastructure with Terraform.",
-      "Partnered with Autonomy and Networking teams on network routing, camera drivers and network behaviour for robust teleoperation."
+      "Provisioned GCP Cloud SQL, Redis and Pub/Sub infrastructure with Terraform."
     ],
     stack: ["WebRTC", "FastAPI", "Redis", "GCP", "Terraform"]
+  },
+  {
+    company: "EggMonkey",
+    role: "Founding Engineer (part-time venture)",
+    start: "2024",
+    end: "2026",
+    location: "Boston, UK",
+    highlights: [
+      "Took a consumer sports platform from concept to production, generating £20k total revenue and £1.3k MRR, owning product discovery, architecture and delivery.",
+      "Partnered directly with the CEO to turn customer needs into scoped features and a pragmatic roadmap; recruited and managed UI/UX and customer-service hires.",
+      "Built the full-stack platform from scratch with Next.js, React, TypeScript, Node.js and PostgreSQL: auth, onboarding, player profiles, fixture booking and matchmaking, subscriptions, football video highlights and an operations admin portal.",
+      "Architected the cloud infrastructure, including Stripe payments and subscriptions, Mux video streaming, S3, SES notifications, Vercel hosting and DNS."
+    ],
+    stack: ["Next.js", "TypeScript", "PostgreSQL", "Stripe", "Mux"]
   },
   {
     company: "Move.ai",
@@ -47,10 +60,8 @@ export const experience: Role[] = [
     end: "Aug 2024",
     location: "London, UK",
     highlights: [
-      "Shipped multi-tenant SaaS services using FastAPI on AWS Lambda with DynamoDB, Stripe and Auth0; unblocked launches by resolving payment flows.",
-      "Implemented cross-account IAM, DynamoDB migrations, and upgraded microservices to Python 3.11.",
-      "Added Datadog dashboards and standardised CI/CD in GitHub Actions for more reliable, visible deploys.",
-      "Rolled out an automated test framework across services, embedded in CI for safer releases."
+      "Shipped multi-tenant SaaS services using FastAPI on AWS Lambda, integrating DynamoDB, Stripe and Auth0.",
+      "Added Datadog performance dashboards and standardised CI/CD in GitHub Actions for more reliable, visible deploys."
     ],
     stack: ["FastAPI", "AWS Lambda", "DynamoDB", "Stripe", "Datadog"]
   },
@@ -61,11 +72,9 @@ export const experience: Role[] = [
     end: "Oct 2023",
     location: "Ascot, UK",
     highlights: [
-      "Delivered retailer APIs with FastAPI/Django, Postgres, Redis and RabbitMQ for digital loyalty; supported the ASOS launch issuing tens of thousands of vouchers.",
-      "Built Celery background workers for async workloads, significantly improving throughput and reliability.",
-      "Led test automation improvements to raise coverage and release stability."
+      "Delivered retailer APIs with FastAPI/Django, Postgres, Redis and RabbitMQ for digital loyalty; supported the ASOS launch issuing tens of thousands of vouchers."
     ],
-    stack: ["Django", "FastAPI", "Postgres", "RabbitMQ", "Celery"]
+    stack: ["Django", "FastAPI", "Postgres", "RabbitMQ", "Redis"]
   },
   {
     company: "Sky",
@@ -75,10 +84,9 @@ export const experience: Role[] = [
     location: "Leeds, UK",
     highlights: [
       "Optimised Sky Identity to handle spikes of ~10 million concurrent users through scaling, resource tuning and load balancing.",
-      "Enabled the NBCU Peacock launch via resilience work on the identity platform.",
-      "Extended the in-house performance framework and introduced chaos and failover testing for APIs serving ~15 million concurrent users."
+      "Introduced chaos and failover testing for APIs serving ~15 million concurrent users."
     ],
-    stack: ["Load testing", "Chaos testing", "RabbitMQ", "Kubernetes"]
+    stack: ["Load testing", "Chaos testing", "Kubernetes"]
   }
 ];
 
@@ -95,7 +103,7 @@ export const skills: { group: string; items: string[] }[] = [
   { group: "Reliability & performance", items: ["Latency reduction", "Load testing", "Chaos/failover testing", "Horizontal scaling"] },
   {
     group: "Cloud & infrastructure",
-    items: ["GCP", "AWS Lambda", "Kubernetes", "Terraform", "PostgreSQL", "DynamoDB", "Redis", "RabbitMQ", "Grafana", "Prometheus"]
+    items: ["GCP", "AWS Lambda", "Kubernetes", "Terraform", "IAM", "PostgreSQL", "DynamoDB", "Redis", "RabbitMQ", "Grafana", "Prometheus"]
   }
 ];
 
