@@ -1,25 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Page } from "../components/Page";
+import { BlogRow } from "../components/Cards";
+import { Page, PageHeader } from "../components/Page";
 import { blogs, visibleBlogs } from "../lib/content";
+import { formatCategory } from "../lib/format";
 
 const demoMode = import.meta.env.DEMO === "true";
 
 export const Route = createFileRoute("/blogs/")({
-  head: () => ({ meta: [{ title: "Learning logs" }] }),
+  head: () => ({ meta: [{ title: "Learning logs | Haffi Mazhar" }] }),
   component: BlogsPage
 });
 
 function BlogsPage() {
   const allBlogs = demoMode ? blogs : visibleBlogs;
+  const categories = [...new Set(allBlogs.map((entry) => entry.data.category))].sort();
   const [selectedCategories, setSelectedCategories] = useState(new Set<string>());
 
-  const filteredBlogs = allBlogs.filter((entry) => {
-    if (selectedCategories.size === 0) {
-      return true;
-    }
-    return selectedCategories.has(entry.data.category);
-  });
+  const filteredBlogs = allBlogs.filter((entry) => selectedCategories.size === 0 || selectedCategories.has(entry.data.category));
 
   function toggleCategory(category: string) {
     setSelectedCategories((current) => {
@@ -33,41 +31,42 @@ function BlogsPage() {
     });
   }
 
+  const pill = (active: boolean) =>
+    `rounded-full border px-3.5 py-1.5 font-mono text-xs tracking-wide uppercase transition-colors ${
+      active ? "border-neon bg-neon/15 text-neon" : "border-line bg-ink/70 text-mist hover:border-neon/50 hover:text-white"
+    }`;
+
   return (
-    <Page>
-      <div className="my-2 p-10 text-center">
-        <h2 className="text-lg font-bold italic">What I'm learning about</h2>
-        <div className="mt-5 flex flex-wrap justify-center gap-5">
-          <Checkbox
-            label="Networking"
-            value={selectedCategories.has("networking")}
-            onChange={() => toggleCategory("networking")}
-          />
-          <Checkbox
-            label="Database"
-            value={selectedCategories.has("database")}
-            onChange={() => toggleCategory("database")}
-          />
-          <button className="bg-zinc-500 p-1 hover:bg-zinc-700" type="button" onClick={() => setSelectedCategories(new Set())}>
-            Clear?
+    <Page backdrop="ambient">
+      <PageHeader eyebrow="Learning logs" title="What I'm learning about">
+        <p>Notes on networking, databases and the systems underneath the software I work on.</p>
+      </PageHeader>
+      <div className="mx-auto max-w-4xl px-5 pb-24 sm:px-8">
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by category">
+          <button type="button" className={pill(selectedCategories.size === 0)} aria-pressed={selectedCategories.size === 0} onClick={() => setSelectedCategories(new Set())}>
+            All
           </button>
-        </div>
-        <ul className="pt-10">
-          {filteredBlogs.map((entry) => (
-            <li className="list-none p-2 underline text-black dark:text-zinc-300" key={entry.slug}>
-              <a href={`/blogs/${entry.slug}`}>{entry.data.title}</a>
-            </li>
+          {categories.map((category) => (
+            <button
+              key={category}
+              type="button"
+              className={pill(selectedCategories.has(category))}
+              aria-pressed={selectedCategories.has(category)}
+              onClick={() => toggleCategory(category)}
+            >
+              {formatCategory(category)}
+            </button>
           ))}
-        </ul>
+          <span className="ml-auto font-mono text-xs text-mist">
+            {filteredBlogs.length} {filteredBlogs.length === 1 ? "post" : "posts"}
+          </span>
+        </div>
+        <ol className="panel mt-6 px-4 py-2 sm:px-6">
+          {filteredBlogs.map((entry, index) => (
+            <BlogRow key={entry.slug} blog={entry} index={index} />
+          ))}
+        </ol>
       </div>
     </Page>
-  );
-}
-
-function Checkbox({ label, value, onChange }: Readonly<{ label: string; value: boolean; onChange: () => void }>) {
-  return (
-    <label>
-      <input type="checkbox" checked={value} onChange={onChange} /> {label}
-    </label>
   );
 }
