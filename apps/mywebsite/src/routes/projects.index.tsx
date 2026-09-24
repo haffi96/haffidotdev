@@ -1,33 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { FeedTile } from "../components/FeedTile";
 import { Page } from "../components/Page";
-import { getMediaUrl, projects } from "../lib/content";
+import { projects } from "../lib/content";
 
 export const Route = createFileRoute("/projects/")({
-  head: () => ({ meta: [{ title: "My Projects" }] }),
+  head: () => ({ meta: [{ title: "Projects · Haffi Mazhar" }] }),
   component: ProjectsPage
 });
 
 function ProjectsPage() {
   return (
-    <Page>
-      <div className="flex flex-col space-y-10 pt-10 text-center">
-        <h2>Projects</h2>
-        {projects.map((project) => (
-          <div className="px-5" key={project.slug}>
-            <article className="inline-block rounded-3xl border border-zinc-400 p-3">
-              <div className="flex flex-col">
-                <p className="font-bold">{project.data.title}</p>
-                {project.data.site ? <a className="underline" href={project.data.site}>Demo site</a> : null}
-                <div className="p-3">
-                  <span>{project.data.techstack}</span>
-                  <a className="pl-2 underline" href={project.data.githublink1}>Repo</a>
-                </div>
-                <a href={`/projects/${project.slug}`}>
-                  <img className="rounded-3xl" src={getMediaUrl(project.data.preview)} alt="project preview" />
-                </a>
-              </div>
-            </article>
-          </div>
+    <Page className="pt-10 sm:pt-14">
+      <header className="border-b border-line pb-8">
+        <p className="hud-label text-phos-500">
+          <span className="text-zinc-600">[01]</span> Camera feeds · {projects.length} sources
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-50 sm:text-4xl">Projects</h1>
+        <p className="mt-3 max-w-2xl text-zinc-400">
+          Side projects and experiments, from SaaS builders to serverless feeds and a Pygame fighter. Open a feed for the
+          details, the live site and the source.
+        </p>
+      </header>
+
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {projects.map((project, index) => (
+          <FeedTile key={project.slug} project={project} index={index} />
         ))}
       </div>
     </Page>

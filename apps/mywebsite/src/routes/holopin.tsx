@@ -8,9 +8,11 @@ export const Route = createFileRoute("/holopin")({
 
 function HolopinPage() {
   return (
-    <Page className="px-5 pt-10 text-center">
-      <a href="https://holopin.io/@haff96">
-        <img className="m-auto rounded-xl bg-white" src="https://holopin.me/haff96" alt="@haff96's Holopin board" />
+    <Page className="pt-10 sm:pt-14">
+      <p className="hud-label text-phos-500">Badges</p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-50">Holopin board</h1>
+      <a href="https://holopin.io/@haff96" className="corners mt-8 block border border-line p-3">
+        <img className="m-auto w-full bg-white" src="https://holopin.me/haff96" alt="@haff96's Holopin board" />
       </a>
     </Page>
   );
