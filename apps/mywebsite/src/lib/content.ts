@@ -137,3 +137,36 @@ function parseFrontmatterValue(value: string) {
   }
   return unquoted;
 }
+
+/** "( Typescript, NextJS, Stripe ) =>" -> ["Typescript", "NextJS", "Stripe"] */
+export function techTags(techstack: string) {
+  return techstack
+    .replace(/=>/g, "")
+    .replace(/[()]/g, "")
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
+
+export function readingTime(body: string) {
+  const words = prepareMarkdown(body)
+    .replace(/```[\s\S]*?```/g, "")
+    .split(/\s+/)
+    .filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220));
+}
+
+/** First prose paragraph of a post, flattened to plain text. */
+export function excerpt(body: string, maxLength = 150) {
+  const paragraph =
+    prepareMarkdown(body)
+      .split(/\n\s*\n/)
+      .map((block) => block.trim())
+      .find((block) => block && !/^(#|!\[|```|---|-\s|\d+\.\s|<)/.test(block)) ?? "";
+  const text = paragraph
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[*`_]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text.length > maxLength ? `${text.slice(0, maxLength).replace(/\s+\S*$/, "")}…` : text;
+}

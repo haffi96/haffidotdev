@@ -1,33 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Reveal } from "../components/motion/Reveal";
 import { Page } from "../components/Page";
-import { getMediaUrl, projects } from "../lib/content";
+import { PageHeader } from "../components/PageHeader";
+import { ProjectCard } from "../components/ProjectCard";
+import { projects } from "../lib/content";
 
 export const Route = createFileRoute("/projects/")({
-  head: () => ({ meta: [{ title: "My Projects" }] }),
+  head: () => ({ meta: [{ title: "Projects · Haffi Mazhar" }] }),
   component: ProjectsPage
 });
 
 function ProjectsPage() {
   return (
     <Page>
-      <div className="flex flex-col space-y-10 pt-10 text-center">
-        <h2>Projects</h2>
-        {projects.map((project) => (
-          <div className="px-5" key={project.slug}>
-            <article className="inline-block rounded-3xl border border-zinc-400 p-3">
-              <div className="flex flex-col">
-                <p className="font-bold">{project.data.title}</p>
-                {project.data.site ? <a className="underline" href={project.data.site}>Demo site</a> : null}
-                <div className="p-3">
-                  <span>{project.data.techstack}</span>
-                  <a className="pl-2 underline" href={project.data.githublink1}>Repo</a>
-                </div>
-                <a href={`/projects/${project.slug}`}>
-                  <img className="rounded-3xl" src={getMediaUrl(project.data.preview)} alt="project preview" />
-                </a>
-              </div>
-            </article>
-          </div>
+      <PageHeader eyebrow={`Projects · ${projects.length}`} title="Things I've built on the side." emphasis={["side."]}>
+        Side projects, from SaaS experiments to games. Most were built to learn a new stack end to end.
+      </PageHeader>
+      <div className="shell grid gap-5 md:grid-cols-2">
+        {projects.map((project, index) => (
+          <Reveal key={project.slug} delay={(index % 2) * 0.08} className="h-full">
+            <ProjectCard project={project} index={index} />
+          </Reveal>
         ))}
       </div>
     </Page>

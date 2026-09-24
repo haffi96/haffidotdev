@@ -3,21 +3,255 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-soft: var(--soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-card: var(--card);
+  --color-raised: var(--raised);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+}
+
 @layer base {
   :root {
     color-scheme: light;
+    --bg: #f7f6f2;
+    --fg: #0f0f12;
+    --soft: #33333b;
+    --muted: #6a6a74;
+    --line: rgb(15 15 18 / 0.1);
+    --card: #ffffff;
+    --raised: #efede7;
+    --accent: #ff4f17;
+    --accent-ink: #d63a06;
+    --accent-soft: rgb(255 79 23 / 0.1);
   }
 
   .dark {
     color-scheme: dark;
+    --bg: #0c0c0e;
+    --fg: #f3f2ee;
+    --soft: #cfcfd6;
+    --muted: #93939d;
+    --line: rgb(255 255 255 / 0.1);
+    --card: #141417;
+    --raised: #1b1b1f;
+    --accent: #ff6a3a;
+    --accent-ink: #ff8a61;
+    --accent-soft: rgb(255 106 58 / 0.14);
+  }
+
+  html {
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 6rem;
   }
 
   body {
-    @apply m-0 bg-zinc-200 text-black dark:bg-zinc-900 dark:text-white;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    @apply m-0 bg-bg font-sans text-fg antialiased;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: #fff;
   }
 
   a {
     @apply underline-offset-4;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[0.7rem] font-medium tracking-[0.18em] text-muted uppercase;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-full border border-line bg-card px-2.5 py-1 font-mono text-[0.7rem] text-soft;
+  }
+
+  .grain {
+    background-image:
+      linear-gradient(to right, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  }
+
+}
+
+/* Editorial prose (unlayered so it overrides the typography plugin). */
+.article {
+  --tw-prose-body: var(--soft);
+  --tw-prose-headings: var(--fg);
+  --tw-prose-lead: var(--soft);
+  --tw-prose-links: var(--fg);
+  --tw-prose-bold: var(--fg);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-bullets: var(--accent);
+  --tw-prose-hr: var(--line);
+  --tw-prose-quotes: var(--fg);
+  --tw-prose-quote-borders: var(--accent);
+  --tw-prose-captions: var(--muted);
+  --tw-prose-code: var(--fg);
+  --tw-prose-pre-code: #e9e9ee;
+  --tw-prose-pre-bg: #131316;
+  --tw-prose-th-borders: var(--line);
+  --tw-prose-td-borders: var(--line);
+  overflow-wrap: anywhere;
+}
+
+.article :where(h1, h2, h3, h4, h5, h6) {
+  @apply tracking-tight;
+  font-weight: 650;
+  scroll-margin-top: 6rem;
+}
+
+.article :where(h1) {
+  @apply text-3xl sm:text-4xl;
+}
+
+.article :where(h4) {
+  font-size: 1.3em;
+}
+
+.article :where(a) {
+  @apply font-medium underline decoration-accent decoration-2 underline-offset-4 transition-colors hover:text-accent-ink;
+}
+
+.article :where(code):not(pre code) {
+  @apply rounded-md border border-line bg-raised px-1.5 py-0.5 text-[0.85em] font-medium;
+}
+
+.article :where(code):not(pre code)::before,
+.article :where(code):not(pre code)::after {
+  content: none;
+}
+
+.article :where(pre) {
+  @apply overflow-x-auto rounded-2xl border border-white/5 text-[0.85rem] leading-relaxed;
+}
+
+.article :where(img) {
+  @apply mx-auto rounded-2xl border border-line bg-white p-2;
+}
+
+.article > hr:first-child {
+  display: none;
+}
+
+.article :where(hr) {
+  @apply my-12;
+}
+
+.article :where(table) {
+  @apply block overflow-x-auto text-[0.95rem] sm:table;
+}
+
+.article :where(th, td) {
+  @apply border border-line px-3 py-2;
+}
+
+/* First-paint hero reveal. CSS (not JS) so the content renders and animates
+   straight from the SSR markup, and stays visible if hydration never happens. */
+@keyframes rise {
+  from {
+    transform: translate3d(0, 105%, 0) rotate(3deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    transform: translate3d(0, 14px, 0);
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    transform: none;
+    opacity: 1;
+    filter: none;
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 var(--accent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.split-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.split-word {
+  display: inline-block;
+  animation: rise 1s cubic-bezier(0.2, 0.75, 0.1, 1) both;
+  transform-origin: 0 100%;
+}
+
+.fade-up {
+  animation: fade-up 0.9s cubic-bezier(0.2, 0.75, 0.1, 1) both;
+}
+
+.spin-slow {
+  animation: spin-slow 22s linear infinite;
+}
+
+.pulse-dot {
+  animation: pulse-dot 2.2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-word,
+  .fade-up,
+  .spin-slow,
+  .pulse-dot {
+    animation: none !important;
+  }
+
+  html {
+    scroll-behavior: auto;
   }
 }

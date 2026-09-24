@@ -1,47 +1,46 @@
-import { useEffect, useState } from "react";
+import { m } from "motion/react";
 
+// The initial theme class is applied by an inline script in <head> before paint,
+// so the icons are driven purely by the `dark` class and never mismatch on hydration.
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    const storedTheme = window.localStorage.getItem("theme");
-    const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    setTheme(storedTheme === "dark" || storedTheme === "light" ? storedTheme : preferredTheme);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    window.localStorage.setItem("theme", theme);
-  }, [theme]);
+  function toggle() {
+    const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
+    document.documentElement.classList.toggle("dark", next === "dark");
+    window.localStorage.setItem("theme", next);
+  }
 
   return (
-    <button
-      className="p-5"
+    <m.button
       type="button"
-      aria-label="Toggle color theme"
-      onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+      aria-label="Toggle colour theme"
+      onClick={toggle}
+      whileTap={{ scale: 0.88, rotate: -20 }}
+      className="relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-full border border-line bg-card/80 text-fg shadow-sm backdrop-blur-md transition-colors hover:border-accent/50 hover:text-accent"
     >
-      {theme === "light" ? <MoonIcon /> : <SunIcon />}
-    </button>
-  );
-}
-
-function SunIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="orange">
-      <path
-        fillRule="evenodd"
-        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function MoonIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="orange">
-      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-    </svg>
+      <svg
+        className="absolute size-[18px] transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] dark:translate-y-6 dark:rotate-90 dark:opacity-0"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" strokeLinejoin="round" />
+      </svg>
+      <svg
+        className="absolute size-[18px] -translate-y-6 -rotate-90 opacity-0 transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] dark:translate-y-0 dark:rotate-0 dark:opacity-100"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="4" />
+        <path
+          d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"
+          strokeLinecap="round"
+        />
+      </svg>
+    </m.button>
   );
 }
