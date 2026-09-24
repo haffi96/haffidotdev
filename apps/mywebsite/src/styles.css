@@ -23,6 +23,7 @@
   --ph-hl-red: #ffd2bd;
   --ph-code: #e5e7e0;
   --ph-btn-edge: #151515;
+  --ph-spark: #1d4aff;
 }
 
 .dark {
@@ -41,6 +42,7 @@
   --ph-hl-red: rgb(245 78 0 / 0.3);
   --ph-code: #2c2f3a;
   --ph-btn-edge: #07080b;
+  --ph-spark: #7c9bff;
 }
 
 @theme inline {
@@ -298,6 +300,29 @@
   }
 }
 
+/* Hero headline: words rise in one after another. Pure CSS so it plays from the first SSR paint. */
+@keyframes word-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em) rotate(2deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.split-word {
+  display: inline-block;
+  animation: word-rise 620ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  transform-origin: 0 100%;
+}
+
+/* CRT-ish scanlines over the simulated camera feed. */
+.scanlines {
+  background-image: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0) 0px, rgb(0 0 0 / 0) 2px, rgb(0 0 0 / 0.22) 3px);
+}
+
 .animate-window-pop {
   animation: window-pop 260ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
@@ -326,7 +351,8 @@
     transform: none;
   }
 
-  .animate-blink {
+  .animate-blink,
+  .split-word {
     animation: none;
   }
 }

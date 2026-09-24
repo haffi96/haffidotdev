@@ -50,14 +50,23 @@ export function CheckIcon({ className = "size-4" }: IconProps) {
   );
 }
 
-/** Little stacked-blocks logo mark. Our own, not borrowed. */
-export function LogoMark({ className = "h-6 w-auto" }: IconProps) {
+/**
+ * "HM" initials mark: a chunky yellow key-cap with a hard offset shadow, like the 3D buttons.
+ * Drawn with strokes (not text) so it renders the same everywhere, including the favicon.
+ */
+export function InitialsMark({ className = "size-7" }: IconProps) {
   return (
-    <svg className={className} aria-hidden="true" viewBox="0 0 40 24">
-      <rect x="1" y="9" width="8" height="14" rx="1.5" fill="#1d4aff" />
-      <rect x="11" y="4" width="8" height="19" rx="1.5" fill="#f54e00" />
-      <rect x="21" y="1" width="8" height="22" rx="1.5" fill="#f7a501" />
-      <path d="M31 23V13l8 10z" fill="currentColor" />
+    <svg className={className} aria-hidden="true" viewBox="0 0 32 32">
+      <rect x="1.5" y="4" width="29" height="26.5" rx="6" fill="var(--ph-btn-edge, #151515)" />
+      <rect x="1.5" y="1.5" width="29" height="26" rx="6" fill="#f7a501" stroke="var(--ph-btn-edge, #151515)" strokeWidth="1.5" />
+      <path
+        d="M6.6 8.5v12.5M13.4 8.5v12.5M6.6 14.75h6.8M17.8 21V8.5l3.6 7 3.6-7V21"
+        fill="none"
+        stroke="#151515"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

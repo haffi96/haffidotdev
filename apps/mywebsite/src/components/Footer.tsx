@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { profile } from "../lib/profile";
-import { GitHubIcon, LinkedInIcon, LogoMark, MailIcon } from "./Icons";
+import { GitHubIcon, LinkedInIcon, InitialsMark, MailIcon } from "./Icons";
 
 export function Footer() {
   return (
@@ -9,7 +9,7 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2 font-bold text-ink">
-              <LogoMark className="h-5 w-auto text-ink" />
+              <InitialsMark className="size-7" />
               haffi.dev
             </div>
             <p className="mt-3 max-w-sm text-sm text-muted">

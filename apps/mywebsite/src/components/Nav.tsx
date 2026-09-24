@@ -1,7 +1,9 @@
 import { Link, useLocation } from "@tanstack/react-router";
+import { m } from "motion/react";
 import { useEffect, useState } from "react";
 import { profile } from "../lib/profile";
-import { GitHubIcon, LinkedInIcon, LogoMark, MailIcon } from "./Icons";
+import { GitHubIcon, LinkedInIcon, InitialsMark, MailIcon } from "./Icons";
+import { spring } from "./motion/MotionProvider";
 import { ThemeToggle } from "./ThemeToggle";
 
 const navItems = [
@@ -14,12 +16,16 @@ const navItems = [
 export function Nav() {
   const pathname = useLocation({ select: (location) => location.pathname });
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
   const isActive = (to: string, exact: boolean) => (exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`));
+  const desktopItems: { label: string; to?: (typeof navItems)[number]["to"]; exact: boolean }[] = [...navItems, { label: "Resume", exact: false }];
+  // The sliding pill follows the hovered item, and rests on the current page otherwise.
+  const pill = hovered ?? navItems.find((item) => isActive(item.to, item.exact))?.label ?? null;
 
   return (
     <header className="sticky top-0 z-40 px-2 pt-2 sm:px-3">
@@ -27,30 +33,45 @@ export function Nav() {
         aria-label="Main"
         className="mx-auto flex h-12 max-w-[1400px] items-center gap-1 rounded-lg border-[1.5px] border-edge bg-desk-2/90 px-2 backdrop-blur supports-[backdrop-filter]:bg-desk-2/75 sm:gap-2 sm:px-3"
       >
-        <Link to="/" className="flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 font-bold text-ink no-underline hover:bg-chrome">
-          <LogoMark className="h-5 w-auto text-ink" />
+        <Link to="/" className="group flex shrink-0 items-center gap-2 rounded-md px-1 py-1 font-bold text-ink no-underline hover:bg-chrome">
+          <InitialsMark className="size-7 shrink-0 transition-transform duration-150 group-hover:-rotate-6" />
           <span className="text-[0.95rem] tracking-tight">haffi.dev</span>
         </Link>
 
-        <ul className="ml-2 hidden items-center gap-0.5 md:flex">
-          {navItems.map((item) => (
-            <li key={item.to}>
-              <Link
-                to={item.to}
-                aria-current={isActive(item.to, item.exact) ? "page" : undefined}
-                className={`rounded-md px-2.5 py-1.5 text-sm font-semibold no-underline transition-colors ${
-                  isActive(item.to, item.exact) ? "bg-window text-ink shadow-[inset_0_0_0_1.5px_var(--ph-line)]" : "text-body hover:bg-chrome"
-                }`}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
-          <li>
-            <a className="rounded-md px-2.5 py-1.5 text-sm font-semibold text-body no-underline hover:bg-chrome" href={profile.links.resume}>
-              Resume
-            </a>
-          </li>
+        <ul className="ml-2 hidden items-center gap-0.5 md:flex" onPointerLeave={() => setHovered(null)}>
+          {desktopItems.map((item) => {
+            const active = item.to ? isActive(item.to, item.exact) : false;
+            const className = `relative block rounded-md px-2.5 py-1.5 text-sm font-semibold no-underline transition-colors ${
+              active || pill === item.label ? "text-ink" : "text-body"
+            }`;
+            const content = (
+              <>
+                {pill === item.label ? (
+                  <m.span
+                    layoutId="nav-pill"
+                    aria-hidden="true"
+                    className={`absolute inset-0 rounded-md ${active ? "bg-window shadow-[inset_0_0_0_1.5px_var(--ph-line)]" : "bg-chrome"}`}
+                    transition={spring}
+                  />
+                ) : null}
+                <span className="relative">{item.label}</span>
+              </>
+            );
+            const hoverProps = { onPointerEnter: () => setHovered(item.label), onFocus: () => setHovered(item.label), onBlur: () => setHovered(null) };
+            return (
+              <li key={item.label}>
+                {item.to ? (
+                  <Link to={item.to} aria-current={active ? "page" : undefined} className={className} {...hoverProps}>
+                    {content}
+                  </Link>
+                ) : (
+                  <a href={profile.links.resume} className={className} {...hoverProps}>
+                    {content}
+                  </a>
+                )}
+              </li>
+            );
+          })}
         </ul>
 
         <div className="ml-auto flex items-center gap-1 sm:gap-1.5">

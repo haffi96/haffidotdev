@@ -1,6 +1,7 @@
 import { HeadContent, Link, Scripts, createRootRoute } from "@tanstack/react-router";
 import appCss from "../styles.css?url";
 import { ArrowIcon } from "../components/Icons";
+import { MotionProvider } from "../components/motion/MotionProvider";
 import { Page } from "../components/Page";
 import { Window } from "../components/Window";
 
@@ -40,7 +41,7 @@ function RootDocument({ children }: Readonly<{ children: React.ReactNode }>) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <MotionProvider>{children}</MotionProvider>
         <Scripts />
       </body>
     </html>
