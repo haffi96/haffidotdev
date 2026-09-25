@@ -11,7 +11,7 @@ import { SectionHeading } from "../components/SectionHeading";
 import { Window } from "../components/Window";
 import { projects, visibleBlogs } from "../lib/content";
 import { achievements, education, experience, profile, skills } from "../lib/profile";
-import avatarUrl from "../media/avatar.png?url";
+import avatarUrl from "../media/avatar.jpg?url";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -186,7 +186,7 @@ function WhoAmI() {
           src={avatarUrl}
           alt={`Portrait of ${profile.name}`}
           width={96}
-          height={90}
+          height={96}
           className="size-20 shrink-0 rounded-lg border-[1.5px] border-edge bg-desk-2 object-cover sm:size-24"
         />
         <div className="min-w-0 font-mono text-sm">
