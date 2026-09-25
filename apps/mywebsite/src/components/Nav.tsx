@@ -50,7 +50,7 @@ export function Nav() {
                   <m.span
                     layoutId="nav-pill"
                     aria-hidden="true"
-                    className={`absolute inset-0 rounded-md ${active ? "bg-window shadow-[inset_0_0_0_1.5px_var(--ph-line)]" : "bg-chrome"}`}
+                    className={`absolute inset-0 rounded-md ${active ? "bg-window shadow-[inset_0_0_0_1.5px_var(--hm-line)]" : "bg-chrome"}`}
                     transition={spring}
                   />
                 ) : null}
@@ -112,7 +112,7 @@ export function Nav() {
       {open ? (
         <div
           id="mobile-menu"
-          className="animate-window-pop mx-auto mt-2 max-w-[1400px] overflow-hidden rounded-lg border-[1.5px] border-edge bg-window shadow-[0_3px_0_0_var(--ph-edge)] md:hidden"
+          className="animate-window-pop mx-auto mt-2 max-w-[1400px] overflow-hidden rounded-lg border-[1.5px] border-edge bg-window shadow-[0_3px_0_0_var(--hm-edge)] md:hidden"
         >
           <p className="border-b-[1.5px] border-edge bg-chrome px-3 py-1.5 font-mono text-xs text-muted">start-menu.exe</p>
           <ul className="grid gap-1 p-2">

@@ -36,7 +36,7 @@ function ProjectPage() {
       <Window title={`${project.slug}.mdx`} accent="yellow" className="animate-window-pop" bodyClassName="p-0" as="article" labelledBy="project-title">
         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
           <div className="flex flex-col gap-5 p-5 sm:p-8">
-            <p className="font-mono text-xs font-semibold tracking-wider text-ph-red uppercase">Project</p>
+            <p className="font-mono text-xs font-semibold tracking-wider text-hm-red uppercase">Project</p>
             <h1 id="project-title" className="-mt-3 text-3xl leading-tight font-bold tracking-tight text-ink sm:text-4xl">
               {project.data.title}
             </h1>

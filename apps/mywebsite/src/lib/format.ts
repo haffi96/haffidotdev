@@ -17,11 +17,11 @@ export function readingMinutes(body: string) {
 }
 
 export const categoryStyles: Record<string, { label: string; dot: string }> = {
-  networking: { label: "Networking", dot: "bg-ph-blue" },
-  database: { label: "Database", dot: "bg-ph-red" },
-  general: { label: "General", dot: "bg-ph-yellow" }
+  networking: { label: "Networking", dot: "bg-hm-blue" },
+  database: { label: "Database", dot: "bg-hm-red" },
+  general: { label: "General", dot: "bg-hm-yellow" }
 };
 
 export function categoryStyle(category: string) {
-  return categoryStyles[category] ?? { label: category, dot: "bg-ph-purple" };
+  return categoryStyles[category] ?? { label: category, dot: "bg-hm-purple" };
 }

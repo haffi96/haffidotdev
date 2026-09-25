@@ -57,8 +57,8 @@ function BlogsPage() {
                   return (
                     <label
                       key={category}
-                      className={`flex cursor-pointer items-center gap-2 rounded-md border-[1.5px] px-3 py-1.5 text-sm font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ph-blue ${
-                        checked ? "border-edge bg-window text-ink shadow-[0_2px_0_0_var(--ph-edge)]" : "border-transparent text-body hover:bg-chrome"
+                      className={`flex cursor-pointer items-center gap-2 rounded-md border-[1.5px] px-3 py-1.5 text-sm font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-hm-blue ${
+                        checked ? "border-edge bg-window text-ink shadow-[0_2px_0_0_var(--hm-edge)]" : "border-transparent text-body hover:bg-chrome"
                       }`}
                     >
                       <input type="checkbox" className="sr-only" checked={checked} onChange={() => toggleCategory(category)} />

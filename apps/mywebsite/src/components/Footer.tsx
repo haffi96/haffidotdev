@@ -66,7 +66,7 @@ export function Footer() {
         <div className="mt-8 flex flex-col gap-2 border-t-[1.5px] border-dashed border-line pt-4 font-mono text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <span>&copy; {new Date().getFullYear()} {profile.name}</span>
           <span className="inline-flex items-center gap-2">
-            <span aria-hidden="true" className="size-2 rounded-full bg-ph-green" />
+            <span aria-hidden="true" className="size-2 rounded-full bg-hm-green" />
             All systems operational (I checked)
           </span>
         </div>

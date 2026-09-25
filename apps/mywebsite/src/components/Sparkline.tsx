@@ -24,7 +24,7 @@ export function Sparkline({
   const step = values.length > 1 ? width / (values.length - 1) : width;
   const line = values.map((value, index) => `${(index * step).toFixed(2)},${toY(value).toFixed(2)}`).join(" ");
   const area = `0,${height} ${line} ${width},${height}`;
-  const color = "var(--ph-spark)";
+  const color = "var(--hm-spark)";
 
   return (
     <svg
@@ -48,7 +48,7 @@ export function Sparkline({
           x2={width}
           y1={height * fraction}
           y2={height * fraction}
-          stroke="var(--ph-line)"
+          stroke="var(--hm-line)"
           strokeDasharray="2 3"
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
@@ -60,7 +60,7 @@ export function Sparkline({
           x2={width}
           y1={toY(threshold)}
           y2={toY(threshold)}
-          stroke="var(--color-ph-red)"
+          stroke="var(--color-hm-red)"
           strokeDasharray="5 3"
           strokeWidth="1.5"
           vectorEffect="non-scaling-stroke"

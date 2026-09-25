@@ -56,12 +56,12 @@ function NotFound() {
           <div className="flex items-start gap-4">
             <span
               aria-hidden="true"
-              className="flex size-12 shrink-0 items-center justify-center rounded-md border-[1.5px] border-edge bg-ph-yellow font-mono text-2xl font-bold text-[#151515]"
+              className="flex size-12 shrink-0 items-center justify-center rounded-md border-[1.5px] border-edge bg-hm-yellow font-mono text-2xl font-bold text-[#151515]"
             >
               !
             </span>
             <div className="min-w-0">
-              <p className="font-mono text-xs font-semibold tracking-wider text-ph-red uppercase">Error 404</p>
+              <p className="font-mono text-xs font-semibold tracking-wider text-hm-red uppercase">Error 404</p>
               <h1 className="mt-1 text-2xl leading-tight font-bold text-ink sm:text-3xl">Listen... I messed up. This page doesn't exist.</h1>
               <p className="mt-3 text-body">
                 I've spent years making sure requests arrive in under 200ms. This one arrived quickly too, just at the wrong address.

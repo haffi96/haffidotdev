@@ -23,10 +23,10 @@ export const Route = createFileRoute("/")({
   component: Home
 });
 
-const statColors = ["border-t-ph-red", "border-t-ph-yellow", "border-t-ph-blue", "border-t-ph-purple"];
-const statText = ["text-ph-red", "text-ph-orange", "text-ph-blue", "text-ph-purple"];
-const dotColors = ["bg-ph-red", "bg-ph-yellow", "bg-ph-blue", "bg-ph-green"];
-const skillAccents = ["bg-ph-blue", "bg-ph-red", "bg-ph-yellow", "bg-ph-purple"];
+const statColors = ["border-t-hm-red", "border-t-hm-yellow", "border-t-hm-blue", "border-t-hm-purple"];
+const statText = ["text-hm-red", "text-hm-orange", "text-hm-blue", "text-hm-purple"];
+const dotColors = ["bg-hm-red", "bg-hm-yellow", "bg-hm-blue", "bg-hm-green"];
+const skillAccents = ["bg-hm-blue", "bg-hm-red", "bg-hm-yellow", "bg-hm-purple"];
 
 function Home() {
   const featured = projects.slice(0, 3);
@@ -116,8 +116,8 @@ function Hero() {
         <div className="min-w-0">
           <p className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-edge bg-desk-2 px-3 py-1 font-mono text-xs font-medium text-ink">
             <span aria-hidden="true" className="relative flex size-2">
-              <span className="absolute inline-flex size-full rounded-full bg-ph-green opacity-60 motion-safe:animate-ping" />
-              <span className="relative inline-flex size-2 rounded-full bg-ph-green" />
+              <span className="absolute inline-flex size-full rounded-full bg-hm-green opacity-60 motion-safe:animate-ping" />
+              <span className="relative inline-flex size-2 rounded-full bg-hm-green" />
             </span>
             {profile.title} · {profile.location}
           </p>
@@ -130,7 +130,7 @@ function Hero() {
                 { text: "instant", className: "hl hl-yellow" }
               ]}
             />
-            <span aria-hidden="true" className="animate-blink ml-1 inline-block h-[0.8em] w-[0.12em] translate-y-[0.08em] bg-ph-red" />
+            <span aria-hidden="true" className="animate-blink ml-1 inline-block h-[0.8em] w-[0.12em] translate-y-[0.08em] bg-hm-red" />
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-body sm:text-xl">
             I build real-time systems, backend services and the cloud infrastructure that keeps them fast. Lately that means
@@ -146,17 +146,17 @@ function Hero() {
           </div>
           <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
             <li>
-              <a className="inline-flex items-center gap-1.5 text-ink hover:text-ph-red" href={profile.links.linkedin}>
+              <a className="inline-flex items-center gap-1.5 text-ink hover:text-hm-red" href={profile.links.linkedin}>
                 <LinkedInIcon /> LinkedIn
               </a>
             </li>
             <li>
-              <a className="inline-flex items-center gap-1.5 text-ink hover:text-ph-red" href={profile.links.github}>
+              <a className="inline-flex items-center gap-1.5 text-ink hover:text-hm-red" href={profile.links.github}>
                 <GitHubIcon /> GitHub
               </a>
             </li>
             <li>
-              <a className="inline-flex items-center gap-1.5 break-all text-ink hover:text-ph-red" href={`mailto:${profile.email}`}>
+              <a className="inline-flex items-center gap-1.5 break-all text-ink hover:text-hm-red" href={`mailto:${profile.email}`}>
                 <MailIcon /> {profile.email}
               </a>
             </li>
@@ -192,7 +192,7 @@ function WhoAmI() {
         <div className="min-w-0 font-mono text-sm">
           <p className="font-sans text-xl font-bold text-ink">{profile.name}</p>
           <p className="text-muted">
-            <span className="text-ph-red">haffi</span>@<span className="text-ph-blue dark:text-[#7c9bff]">localhost</span>
+            <span className="text-hm-red">haffi</span>@<span className="text-hm-blue dark:text-[#7c9bff]">localhost</span>
           </p>
           <p className="mt-1 text-xs text-muted">------------------</p>
         </div>
@@ -200,7 +200,7 @@ function WhoAmI() {
       <dl className="mt-4 space-y-1.5 font-mono text-[0.8rem] leading-snug">
         {facts.map((fact) => (
           <div key={fact.key} className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-2">
-            <dt className="font-semibold text-ph-red">{fact.key}</dt>
+            <dt className="font-semibold text-hm-red">{fact.key}</dt>
             <dd className="text-body">{fact.value}</dd>
           </div>
         ))}
@@ -208,7 +208,7 @@ function WhoAmI() {
       <div className="mt-4 flex items-end justify-between gap-3 border-t-[1.5px] border-dashed border-line pt-3">
         <div className="min-w-0">
           <div aria-hidden="true" className="flex gap-1">
-            {["bg-ph-red", "bg-ph-orange", "bg-ph-yellow", "bg-ph-green", "bg-ph-blue", "bg-ph-purple"].map((color) => (
+            {["bg-hm-red", "bg-hm-orange", "bg-hm-yellow", "bg-hm-green", "bg-hm-blue", "bg-hm-purple"].map((color) => (
               <span key={color} className={`size-3.5 rounded-sm border border-edge ${color}`} />
             ))}
           </div>
@@ -285,7 +285,7 @@ function Experience() {
               <h3 className="text-xl font-bold text-ink">
                 {role.company}
                 {role.end === "Present" ? (
-                  <span className="ml-2 inline-block -translate-y-0.5 rounded bg-ph-green px-1.5 py-0.5 align-middle font-mono text-[0.65rem] font-semibold tracking-wide text-white uppercase">
+                  <span className="ml-2 inline-block -translate-y-0.5 rounded bg-hm-green px-1.5 py-0.5 align-middle font-mono text-[0.65rem] font-semibold tracking-wide text-white uppercase">
                     Now
                   </span>
                 ) : null}
@@ -299,7 +299,7 @@ function Experience() {
             <ul className="mt-3 space-y-2 text-[0.95rem] leading-relaxed">
               {role.highlights.map((highlight) => (
                 <li key={highlight} className="flex gap-2.5">
-                  <span aria-hidden="true" className="mt-[0.6em] size-1.5 shrink-0 rotate-45 bg-ph-red" />
+                  <span aria-hidden="true" className="mt-[0.6em] size-1.5 shrink-0 rotate-45 bg-hm-red" />
                   <span>{highlight}</span>
                 </li>
               ))}

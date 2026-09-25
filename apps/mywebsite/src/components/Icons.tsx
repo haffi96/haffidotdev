@@ -57,8 +57,8 @@ export function CheckIcon({ className = "size-4" }: IconProps) {
 export function InitialsMark({ className = "size-7" }: IconProps) {
   return (
     <svg className={className} aria-hidden="true" viewBox="0 0 32 32">
-      <rect x="1.5" y="4" width="29" height="26.5" rx="6" fill="var(--ph-btn-edge, #151515)" />
-      <rect x="1.5" y="1.5" width="29" height="26" rx="6" fill="#f7a501" stroke="var(--ph-btn-edge, #151515)" strokeWidth="1.5" />
+      <rect x="1.5" y="4" width="29" height="26.5" rx="6" fill="var(--hm-btn-edge, #151515)" />
+      <rect x="1.5" y="1.5" width="29" height="26" rx="6" fill="#f7a501" stroke="var(--hm-btn-edge, #151515)" strokeWidth="1.5" />
       <path
         d="M6.6 8.5v12.5M13.4 8.5v12.5M6.6 14.75h6.8M17.8 21V8.5l3.6 7 3.6-7V21"
         fill="none"

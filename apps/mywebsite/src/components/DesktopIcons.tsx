@@ -43,7 +43,7 @@ function IconColumn({ items, side }: Readonly<{ items: DesktopIcon[]; side: "lef
           className="hover-wiggle group flex flex-col items-center gap-1 rounded-md p-2 text-center no-underline hover:bg-chrome/70"
         >
           <span className="wiggle-target block size-11 drop-shadow-[0_2px_0_rgb(0_0_0/0.25)]">{item.icon}</span>
-          <span className="rounded px-1 text-[0.72rem] leading-tight font-semibold text-ink group-hover:bg-ph-yellow group-hover:text-[#151515]">
+          <span className="rounded px-1 text-[0.72rem] leading-tight font-semibold text-ink group-hover:bg-hm-yellow group-hover:text-[#151515]">
             {item.label}
           </span>
         </a>

@@ -3,7 +3,7 @@ import { prepareMarkdown } from "../lib/content";
 export function MarkdownContent({ body }: Readonly<{ body: string }>) {
   return (
     <div
-      className="ph-prose prose max-w-none text-[1.0625rem] leading-[1.75] md:text-[1.125rem] prose-headings:mt-10 prose-headings:mb-4 prose-h1:text-3xl prose-h2:text-[1.6rem] prose-h3:text-xl prose-h4:text-lg prose-p:my-5 prose-li:my-1.5 prose-pre:my-6 prose-img:my-8"
+      className="hm-prose prose max-w-none text-[1.0625rem] leading-[1.75] md:text-[1.125rem] prose-headings:mt-10 prose-headings:mb-4 prose-h1:text-3xl prose-h2:text-[1.6rem] prose-h3:text-xl prose-h4:text-lg prose-p:my-5 prose-li:my-1.5 prose-pre:my-6 prose-img:my-8"
       dangerouslySetInnerHTML={{ __html: markdownToHtml(prepareMarkdown(body)) }}
     />
   );

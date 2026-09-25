@@ -9,7 +9,7 @@ export function ProjectCard({ project, priority = false }: Readonly<{ project: C
   const stack = parseTechstack(project.data.techstack);
 
   return (
-    <article className="group flex min-w-0 flex-col overflow-hidden rounded-lg border-[1.5px] border-edge bg-window shadow-[0_3px_0_0_var(--ph-edge)] transition-transform duration-150 hover:-translate-y-0.5">
+    <article className="group flex min-w-0 flex-col overflow-hidden rounded-lg border-[1.5px] border-edge bg-window shadow-[0_3px_0_0_var(--hm-edge)] transition-transform duration-150 hover:-translate-y-0.5">
       <Link
         to="/projects/$slug"
         params={{ slug: project.slug }}

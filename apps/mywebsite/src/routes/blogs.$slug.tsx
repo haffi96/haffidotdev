@@ -31,7 +31,7 @@ function BlogPage() {
         <span className="text-muted"> / {blog.slug}</span>
       </nav>
 
-      <article className="animate-window-pop mx-auto max-w-[860px] overflow-hidden rounded-lg border-[1.5px] border-edge bg-window shadow-[0_2px_0_0_var(--ph-edge)]">
+      <article className="animate-window-pop mx-auto max-w-[860px] overflow-hidden rounded-lg border-[1.5px] border-edge bg-window shadow-[0_2px_0_0_var(--hm-edge)]">
         <div className="flex items-center gap-2 border-b-[1.5px] border-edge bg-chrome px-3 py-1.5">
           <span aria-hidden="true" className={`size-2.5 rounded-sm border border-edge ${category.dot}`} />
           <p className="min-w-0 flex-1 truncate font-mono text-xs text-muted">{blog.slug}.mdx</p>

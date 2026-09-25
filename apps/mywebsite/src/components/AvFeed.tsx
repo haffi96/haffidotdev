@@ -72,7 +72,7 @@ type Stats = { g2g: number; rtt: number; jitter: number; bitrate: number; fps: n
 
 const HISTORY = 48;
 
-// Canvas palette: PostHog-ish colours on a navy "screen" that stays dark in both themes.
+// Canvas palette: site accent colours on a navy "screen" that stays dark in both themes.
 const SAND = "238, 239, 233";
 const YELLOW = "247, 165, 1";
 const BLUE = "124, 155, 255";
@@ -456,14 +456,14 @@ export function AvFeed() {
 
           <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2.5 font-mono text-[10px] font-semibold tracking-wider text-[#eeefe9] uppercase sm:p-3 sm:text-[11px]">
             <span className="flex min-w-0 items-center gap-1.5 rounded bg-black/55 px-1.5 py-0.5">
-              <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${live ? "bg-ph-green" : "bg-ph-yellow"}`} />
+              <span aria-hidden="true" className={`size-1.5 shrink-0 rounded-full ${live ? "bg-hm-green" : "bg-hm-yellow"}`} />
               <span className="truncate">
                 {live ? "Live" : "Negotiating"} · {profile.label} · Cam_front AV-07
               </span>
             </span>
             <span className="flex shrink-0 items-center gap-2 rounded bg-black/55 px-1.5 py-0.5">
               <span className="flex items-center gap-1 text-[#ff8a57]">
-                <span aria-hidden="true" className={`inline-block size-1.5 rounded-full bg-ph-red ${live ? "animate-blink" : "opacity-40"}`} />
+                <span aria-hidden="true" className={`inline-block size-1.5 rounded-full bg-hm-red ${live ? "animate-blink" : "opacity-40"}`} />
                 Rec
               </span>
               <span ref={timecodeRef} className="hidden tabular-nums min-[420px]:inline">
@@ -473,16 +473,16 @@ export function AvFeed() {
           </div>
 
           <div aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1/2 size-10 -translate-x-1/2 -translate-y-1/2 opacity-60">
-            <span className="absolute top-0 left-0 size-2 border-t-[1.5px] border-l-[1.5px] border-ph-yellow" />
-            <span className="absolute top-0 right-0 size-2 border-t-[1.5px] border-r-[1.5px] border-ph-yellow" />
-            <span className="absolute bottom-0 left-0 size-2 border-b-[1.5px] border-l-[1.5px] border-ph-yellow" />
-            <span className="absolute right-0 bottom-0 size-2 border-r-[1.5px] border-b-[1.5px] border-ph-yellow" />
+            <span className="absolute top-0 left-0 size-2 border-t-[1.5px] border-l-[1.5px] border-hm-yellow" />
+            <span className="absolute top-0 right-0 size-2 border-t-[1.5px] border-r-[1.5px] border-hm-yellow" />
+            <span className="absolute bottom-0 left-0 size-2 border-b-[1.5px] border-l-[1.5px] border-hm-yellow" />
+            <span className="absolute right-0 bottom-0 size-2 border-r-[1.5px] border-b-[1.5px] border-hm-yellow" />
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-2.5 sm:p-3">
             <div className="rounded bg-black/60 px-2 py-1">
               <p className="font-mono text-[9px] tracking-[0.16em] text-[#c9cbc0] uppercase sm:text-[10px]">Glass-to-glass</p>
-              <p className="font-mono text-xl leading-tight font-semibold text-ph-yellow tabular-nums sm:text-2xl">
+              <p className="font-mono text-xl leading-tight font-semibold text-hm-yellow tabular-nums sm:text-2xl">
                 {fmt(stats?.g2g)}
                 <span className="ml-1 text-xs font-normal text-[#c9cbc0]">ms</span>
               </p>
@@ -498,9 +498,9 @@ export function AvFeed() {
                   const active = armed && index === step;
                   return (
                     <li key={item.tag + item.text} className={`flex items-baseline gap-2 ${done || active ? "text-[#eeefe9]" : "text-[#6b6e7a]"}`}>
-                      <span className={`w-9 shrink-0 font-semibold ${done ? "text-ph-green" : active ? "text-ph-yellow" : ""}`}>{item.tag}</span>
+                      <span className={`w-9 shrink-0 font-semibold ${done ? "text-hm-green" : active ? "text-hm-yellow" : ""}`}>{item.tag}</span>
                       <span className="min-w-0 flex-1 truncate">{item.text}</span>
-                      <span className={`shrink-0 ${done ? "text-ph-green" : ""}`}>{done ? item.result : active ? "…" : ""}</span>
+                      <span className={`shrink-0 ${done ? "text-hm-green" : ""}`}>{done ? item.result : active ? "…" : ""}</span>
                     </li>
                   );
                 })}
@@ -511,7 +511,7 @@ export function AvFeed() {
         </div>
 
         <div className="flex min-w-0 flex-col p-4 sm:p-5">
-          <p className="font-mono text-xs font-semibold tracking-wider text-ph-red uppercase">Day job, dramatised</p>
+          <p className="font-mono text-xs font-semibold tracking-wider text-hm-red uppercase">Day job, dramatised</p>
           <h2 id="feed-heading" className="mt-1 text-2xl leading-tight font-bold tracking-tight text-ink">
             Driving a car from a long way away
           </h2>

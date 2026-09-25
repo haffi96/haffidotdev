@@ -16,11 +16,11 @@ type WindowProps = Readonly<{
 }>;
 
 const accentClass: Record<NonNullable<WindowProps["accent"]>, string> = {
-  yellow: "bg-ph-yellow",
-  blue: "bg-ph-blue",
-  red: "bg-ph-red",
-  purple: "bg-ph-purple",
-  green: "bg-ph-green",
+  yellow: "bg-hm-yellow",
+  blue: "bg-hm-blue",
+  red: "bg-hm-red",
+  purple: "bg-hm-purple",
+  green: "bg-hm-green",
   none: "bg-transparent"
 };
 
@@ -88,7 +88,7 @@ function DraggableWindow({ title, children, className = "", bodyClassName = "p-5
   );
 }
 
-const frameClass = "relative min-w-0 overflow-hidden rounded-lg border-[1.5px] border-edge bg-window shadow-[0_2px_0_0_var(--ph-edge)]";
+const frameClass = "relative min-w-0 overflow-hidden rounded-lg border-[1.5px] border-edge bg-window shadow-[0_2px_0_0_var(--hm-edge)]";
 
 function TitleBar({
   title,

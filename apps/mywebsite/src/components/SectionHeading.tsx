@@ -12,7 +12,7 @@ export function SectionHeading({
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <p className="font-mono text-xs font-semibold tracking-wider text-ph-red uppercase">{kicker}</p>
+        <p className="font-mono text-xs font-semibold tracking-wider text-hm-red uppercase">{kicker}</p>
         <Heading id={id} className={`mt-1 leading-tight font-bold tracking-tight text-ink ${level === 1 ? "text-3xl sm:text-[2.6rem]" : "text-2xl sm:text-[1.7rem]"}`}>
           {title}
         </Heading>

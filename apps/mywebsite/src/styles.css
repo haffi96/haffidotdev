@@ -4,68 +4,68 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * "posthog" design tokens. Warm beige desktop in light mode, deep navy in dark mode.
+ * Design tokens. Warm beige desktop in light mode, deep navy in dark mode.
  * Components read these through the Tailwind colours declared in @theme below.
  */
 :root {
-  --ph-desk: #eeefe9;
-  --ph-desk-2: #e5e7e0;
-  --ph-dots: #d0d1c9;
-  --ph-window: #fdfdf8;
-  --ph-chrome: #e5e7e0;
-  --ph-ink: #151515;
-  --ph-body: #23251d;
-  --ph-muted: #5b5d53;
-  --ph-line: #bfc1b7;
-  --ph-edge: #4d4f46;
-  --ph-hl-yellow: #fbe5a2;
-  --ph-hl-blue: #cfdcff;
-  --ph-hl-red: #ffd2bd;
-  --ph-code: #e5e7e0;
-  --ph-btn-edge: #151515;
-  --ph-spark: #1d4aff;
+  --hm-desk: #eeefe9;
+  --hm-desk-2: #e5e7e0;
+  --hm-dots: #d0d1c9;
+  --hm-window: #fdfdf8;
+  --hm-chrome: #e5e7e0;
+  --hm-ink: #151515;
+  --hm-body: #23251d;
+  --hm-muted: #5b5d53;
+  --hm-line: #bfc1b7;
+  --hm-edge: #4d4f46;
+  --hm-hl-yellow: #fbe5a2;
+  --hm-hl-blue: #cfdcff;
+  --hm-hl-red: #ffd2bd;
+  --hm-code: #e5e7e0;
+  --hm-btn-edge: #151515;
+  --hm-spark: #1d4aff;
 }
 
 .dark {
-  --ph-desk: #1d1f27;
-  --ph-desk-2: #16171d;
-  --ph-dots: #2c2e38;
-  --ph-window: #23252e;
-  --ph-chrome: #2c2f3a;
-  --ph-ink: #eeefe9;
-  --ph-body: #d8d9d2;
-  --ph-muted: #a2a49a;
-  --ph-line: #3b3e4a;
-  --ph-edge: #5c5f6d;
-  --ph-hl-yellow: rgb(247 165 1 / 0.28);
-  --ph-hl-blue: rgb(29 74 255 / 0.35);
-  --ph-hl-red: rgb(245 78 0 / 0.3);
-  --ph-code: #2c2f3a;
-  --ph-btn-edge: #07080b;
-  --ph-spark: #7c9bff;
+  --hm-desk: #1d1f27;
+  --hm-desk-2: #16171d;
+  --hm-dots: #2c2e38;
+  --hm-window: #23252e;
+  --hm-chrome: #2c2f3a;
+  --hm-ink: #eeefe9;
+  --hm-body: #d8d9d2;
+  --hm-muted: #a2a49a;
+  --hm-line: #3b3e4a;
+  --hm-edge: #5c5f6d;
+  --hm-hl-yellow: rgb(247 165 1 / 0.28);
+  --hm-hl-blue: rgb(29 74 255 / 0.35);
+  --hm-hl-red: rgb(245 78 0 / 0.3);
+  --hm-code: #2c2f3a;
+  --hm-btn-edge: #07080b;
+  --hm-spark: #7c9bff;
 }
 
 @theme inline {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  --color-desk: var(--ph-desk);
-  --color-desk-2: var(--ph-desk-2);
-  --color-window: var(--ph-window);
-  --color-chrome: var(--ph-chrome);
-  --color-ink: var(--ph-ink);
-  --color-body: var(--ph-body);
-  --color-muted: var(--ph-muted);
-  --color-line: var(--ph-line);
-  --color-edge: var(--ph-edge);
-  --color-code: var(--ph-code);
+  --color-desk: var(--hm-desk);
+  --color-desk-2: var(--hm-desk-2);
+  --color-window: var(--hm-window);
+  --color-chrome: var(--hm-chrome);
+  --color-ink: var(--hm-ink);
+  --color-body: var(--hm-body);
+  --color-muted: var(--hm-muted);
+  --color-line: var(--hm-line);
+  --color-edge: var(--hm-edge);
+  --color-code: var(--hm-code);
 
-  --color-ph-red: #f54e00;
-  --color-ph-orange: #eb9d2a;
-  --color-ph-yellow: #f7a501;
-  --color-ph-blue: #1d4aff;
-  --color-ph-purple: #b62ad9;
-  --color-ph-green: #6aa84f;
+  --color-hm-red: #f54e00;
+  --color-hm-orange: #eb9d2a;
+  --color-hm-yellow: #f7a501;
+  --color-hm-blue: #1d4aff;
+  --color-hm-purple: #b62ad9;
+  --color-hm-green: #6aa84f;
 }
 
 @layer base {
@@ -83,7 +83,7 @@
 
   body {
     @apply m-0 bg-desk font-sans text-body antialiased;
-    background-image: radial-gradient(var(--ph-dots) 1px, transparent 1px);
+    background-image: radial-gradient(var(--hm-dots) 1px, transparent 1px);
     background-size: 22px 22px;
     overflow-x: hidden;
   }
@@ -93,12 +93,12 @@
   }
 
   ::selection {
-    background: var(--ph-hl-yellow);
-    color: var(--ph-ink);
+    background: var(--hm-hl-yellow);
+    color: var(--hm-ink);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ph-blue);
+    outline: 2px solid var(--color-hm-blue);
     outline-offset: 2px;
   }
 }
@@ -106,8 +106,8 @@
 @layer components {
   /* Chunky "3D" button: a hard offset shadow that collapses when pressed. */
   .btn-3d {
-    @apply relative inline-flex items-center justify-center gap-2 rounded-md border-[1.5px] border-[var(--ph-btn-edge)] px-4 py-2 text-sm font-bold text-[#151515] no-underline select-none;
-    box-shadow: 0 3px 0 0 var(--ph-btn-edge);
+    @apply relative inline-flex items-center justify-center gap-2 rounded-md border-[1.5px] border-[var(--hm-btn-edge)] px-4 py-2 text-sm font-bold text-[#151515] no-underline select-none;
+    box-shadow: 0 3px 0 0 var(--hm-btn-edge);
     transform: translateY(-2px);
     transition:
       transform 90ms ease-out,
@@ -116,16 +116,16 @@
 
   .btn-3d:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 0 0 var(--ph-btn-edge);
+    box-shadow: 0 4px 0 0 var(--hm-btn-edge);
   }
 
   .btn-3d:active {
     transform: translateY(1px);
-    box-shadow: 0 0 0 0 var(--ph-btn-edge);
+    box-shadow: 0 0 0 0 var(--hm-btn-edge);
   }
 
   .btn-orange {
-    @apply bg-ph-yellow;
+    @apply bg-hm-yellow;
   }
 
   .btn-plain {
@@ -133,7 +133,7 @@
   }
 
   .btn-red {
-    @apply bg-ph-red text-white;
+    @apply bg-hm-red text-white;
   }
 
   /* Highlighter-pen text, slightly skewed like a real marker swipe. */
@@ -146,15 +146,15 @@
   }
 
   .hl-yellow {
-    background: linear-gradient(104deg, transparent 0.2em, var(--ph-hl-yellow) 0.3em, var(--ph-hl-yellow) 96%, transparent);
+    background: linear-gradient(104deg, transparent 0.2em, var(--hm-hl-yellow) 0.3em, var(--hm-hl-yellow) 96%, transparent);
   }
 
   .hl-blue {
-    background: linear-gradient(104deg, transparent 0.2em, var(--ph-hl-blue) 0.3em, var(--ph-hl-blue) 96%, transparent);
+    background: linear-gradient(104deg, transparent 0.2em, var(--hm-hl-blue) 0.3em, var(--hm-hl-blue) 96%, transparent);
   }
 
   .hl-red {
-    background: linear-gradient(104deg, transparent 0.2em, var(--ph-hl-red) 0.3em, var(--ph-hl-red) 96%, transparent);
+    background: linear-gradient(104deg, transparent 0.2em, var(--hm-hl-red) 0.3em, var(--hm-hl-red) 96%, transparent);
   }
 
   .chip {
@@ -163,110 +163,110 @@
 }
 
 /* Long-form reading styles. Unlayered so they win over the typography plugin's utilities layer. */
-.prose.ph-prose {
-  --tw-prose-body: var(--ph-body);
-  --tw-prose-headings: var(--ph-ink);
-  --tw-prose-lead: var(--ph-muted);
-  --tw-prose-links: var(--ph-ink);
-  --tw-prose-bold: var(--ph-ink);
-  --tw-prose-counters: var(--ph-muted);
+.prose.hm-prose {
+  --tw-prose-body: var(--hm-body);
+  --tw-prose-headings: var(--hm-ink);
+  --tw-prose-lead: var(--hm-muted);
+  --tw-prose-links: var(--hm-ink);
+  --tw-prose-bold: var(--hm-ink);
+  --tw-prose-counters: var(--hm-muted);
   --tw-prose-bullets: #f54e00;
-  --tw-prose-hr: var(--ph-line);
-  --tw-prose-quotes: var(--ph-ink);
+  --tw-prose-hr: var(--hm-line);
+  --tw-prose-quotes: var(--hm-ink);
   --tw-prose-quote-borders: #f7a501;
-  --tw-prose-captions: var(--ph-muted);
-  --tw-prose-code: var(--ph-ink);
+  --tw-prose-captions: var(--hm-muted);
+  --tw-prose-code: var(--hm-ink);
   --tw-prose-pre-code: #eeefe9;
   --tw-prose-pre-bg: #1d1f27;
-  --tw-prose-th-borders: var(--ph-line);
-  --tw-prose-td-borders: var(--ph-line);
+  --tw-prose-th-borders: var(--hm-line);
+  --tw-prose-td-borders: var(--hm-line);
   font-size: 1.0625rem;
   line-height: 1.75;
 }
 
 @media (min-width: 768px) {
-  .prose.ph-prose {
+  .prose.hm-prose {
     font-size: 1.125rem;
   }
 }
 
-.prose.ph-prose :where(h1, h2, h3, h4) {
+.prose.hm-prose :where(h1, h2, h3, h4) {
   font-weight: 700;
   letter-spacing: -0.015em;
   scroll-margin-top: 5rem;
 }
 
-.prose.ph-prose :where(h2) {
+.prose.hm-prose :where(h2) {
   padding-bottom: 0.35em;
-  border-bottom: 1.5px dashed var(--ph-line);
+  border-bottom: 1.5px dashed var(--hm-line);
 }
 
-.prose.ph-prose :where(a) {
+.prose.hm-prose :where(a) {
   text-decoration-color: #f54e00;
   text-decoration-thickness: 2px;
   font-weight: 600;
 }
 
-.prose.ph-prose :where(a):hover {
+.prose.hm-prose :where(a):hover {
   color: #f54e00;
 }
 
-.prose.ph-prose :where(code):not(:where(pre code)) {
-  background: var(--ph-code);
-  border: 1px solid var(--ph-line);
+.prose.hm-prose :where(code):not(:where(pre code)) {
+  background: var(--hm-code);
+  border: 1px solid var(--hm-line);
   border-radius: 0.3rem;
   padding: 0.1em 0.35em;
   font-weight: 500;
   font-size: 0.875em;
 }
 
-.prose.ph-prose :where(code):not(:where(pre code))::before,
-.prose.ph-prose :where(code):not(:where(pre code))::after {
+.prose.hm-prose :where(code):not(:where(pre code))::before,
+.prose.hm-prose :where(code):not(:where(pre code))::after {
   content: none;
 }
 
-.prose.ph-prose :where(pre) {
-  border: 1.5px solid var(--ph-edge);
+.prose.hm-prose :where(pre) {
+  border: 1.5px solid var(--hm-edge);
   border-radius: 0.5rem;
-  box-shadow: 0 3px 0 0 var(--ph-edge);
+  box-shadow: 0 3px 0 0 var(--hm-edge);
   overflow-x: auto;
   font-size: 0.85em;
   line-height: 1.6;
 }
 
-.prose.ph-prose :where(img) {
+.prose.hm-prose :where(img) {
   display: block;
   max-width: 100%;
   height: auto;
   margin-inline: auto;
-  border: 1.5px solid var(--ph-line);
+  border: 1.5px solid var(--hm-line);
   border-radius: 0.5rem;
   background: #fff;
 }
 
-.prose.ph-prose :where(ul) {
+.prose.hm-prose :where(ul) {
   list-style-type: disc;
 }
 
-.prose.ph-prose :where(ol) {
+.prose.hm-prose :where(ol) {
   list-style-type: decimal;
 }
 
-.prose.ph-prose :where(table) {
+.prose.hm-prose :where(table) {
   display: block;
   overflow-x: auto;
 }
 
-.prose.ph-prose :where(th, td) {
-  border: 1px solid var(--ph-line);
+.prose.hm-prose :where(th, td) {
+  border: 1px solid var(--hm-line);
   padding: 0.4rem 0.7rem;
 }
 
-.prose.ph-prose :where(th) {
-  background: var(--ph-chrome);
+.prose.hm-prose :where(th) {
+  background: var(--hm-chrome);
 }
 
-.prose.ph-prose > :first-child {
+.prose.hm-prose > :first-child {
   margin-top: 0;
 }
 
