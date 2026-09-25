@@ -253,9 +253,12 @@ function Achievements() {
         {achievements.map((stat, index) => (
           <li
             key={stat.label}
-            className={`rounded-lg border-[1.5px] border-t-[5px] border-edge bg-desk p-3 sm:p-4 ${statColors[index % statColors.length]}`}
+            className={`relative rounded-lg border-[1.5px] border-t-[5px] border-edge bg-desk p-3 sm:p-4 ${statColors[index % statColors.length]}`}
           >
-            <p className={`text-[1.7rem] font-bold tracking-tight sm:text-4xl ${statText[index % statText.length]}`}>
+            <span className="absolute top-2 right-2 rounded border border-line px-1.5 py-px font-mono text-[10px] text-muted">
+              {stat.company}
+            </span>
+            <p className={`mt-4 text-[1.7rem] font-bold tracking-tight sm:mt-3 sm:text-4xl ${statText[index % statText.length]}`}>
               <Counter value={stat.value} />
             </p>
             <p className="mt-1 font-bold text-ink">{stat.label}</p>

@@ -91,10 +91,10 @@ export const experience: Role[] = [
 ];
 
 export const achievements = [
-  { value: "<200ms", label: "Live video latency", detail: "Fleet-wide AV teleoperation over an optimised WebRTC pipeline." },
-  { value: "<50ms", label: "Control messaging", detail: "Bidirectional operator-to-vehicle messaging across fibre, 4G and Starlink." },
-  { value: "15M", label: "Concurrent users", detail: "Performance and chaos testing for Sky's identity platform." },
-  { value: "10,000s", label: "Vouchers issued", detail: "ASOS digital loyalty launch at Bink." }
+  { value: "<200ms", company: "Oxa", label: "Live video latency", detail: "Fleet-wide AV teleoperation over an optimised WebRTC pipeline." },
+  { value: "<50ms", company: "Oxa", label: "Control messaging", detail: "Bidirectional operator-to-vehicle messaging across fibre, 4G and Starlink." },
+  { value: "15M", company: "Sky", label: "Concurrent users", detail: "Performance and chaos testing for Sky's identity platform." },
+  { value: "10,000s", company: "Bink", label: "Vouchers issued", detail: "ASOS digital loyalty launch at Bink." }
 ];
 
 export const skills: { group: string; items: string[] }[] = [
