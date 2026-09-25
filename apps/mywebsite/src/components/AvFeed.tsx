@@ -441,7 +441,7 @@ export function AvFeed() {
   ];
 
   return (
-    <Window title="av_feed.exe  (simulated, NDA-safe)" accent="green" bodyClassName="p-0" labelledBy="feed-heading">
+    <Window title="av_feed.exe" accent="green" bodyClassName="p-0" labelledBy="feed-heading">
       <div ref={rootRef} className="grid lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
         {/* The "screen". Stays dark in both themes, like a real monitor. */}
         <div className="relative aspect-[16/11] min-w-0 overflow-hidden border-b-[1.5px] border-edge bg-[#1d1f27] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[400px] lg:border-r-[1.5px] lg:border-b-0 dark:bg-[#111218]">
@@ -555,9 +555,8 @@ export function AvFeed() {
           <div className="mt-4">
             <div className="flex items-center justify-between font-mono text-[10px] font-semibold tracking-wider uppercase">
               <span className="text-muted">G2G latency · last 24s</span>
-              <span className="text-ph-red">200ms budget</span>
             </div>
-            <Sparkline className="mt-1.5 h-12 w-full" values={history} min={100} max={210} threshold={200} />
+            <Sparkline className="mt-1.5 h-12 w-full" values={history} min={100} max={210} />
           </div>
 
           <p className="mt-auto pt-4 font-mono text-xs text-muted">{live ? profile.quip : "Not actual footage. No cars were harmed."}</p>
