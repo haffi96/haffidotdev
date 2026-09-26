@@ -14,7 +14,7 @@ export type ProjectMeta = {
   preview: string;
   techstack: string;
   site?: string;
-  githublink1: string;
+  githublink1?: string;
   githublink2?: string;
 };
 

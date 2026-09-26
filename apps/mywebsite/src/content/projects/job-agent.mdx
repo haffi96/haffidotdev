@@ -1,0 +1,12 @@
+---
+rank: 6
+preview: "../../media/job-agent.gif"
+title: AI job application agent
+techstack: ( Typescript, TanStack Start, Cloudflare Workers, D1, R2, Drizzle, AI SDK ) =>
+site: https://jobs.haffi.dev/
+githublink1: https://github.com/haffi96/haffidotdev/tree/main/apps/job-agent
+---
+
+An agent that tailors a CV and cover letter to a specific job posting.
+
+You store your profile, source CV, experience entries and writing instructions once. For each application, paste a job link or description and it generates a conservatively tailored CV and cover letter. You can comment on individual blocks and request revisions, browse the revision history per application, and export to Markdown, DOCX or PDF. It runs on Cloudflare Workers with D1 for data and R2 for document storage, and uses Better Auth for sign-in.
