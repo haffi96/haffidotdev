@@ -1,0 +1,144 @@
+---
+title: Turning a mosque PDF timetable into Home Assistant sensors
+rank: 21
+category: general
+name: prayer-timetable-home-assistant
+---
+
+### Intro
+
+I wanted my Google Nest speaker to play the adhan at each prayer time. Home Assistant can do the playing part easily; the hard part is getting accurate prayer times.
+
+There are APIs that calculate prayer times from your location, but mosques publish their own timetables, and those are what people actually follow. The catch is that they come as a PDF, usually one per month, and every mosque formats theirs differently.
+
+So I built [Prayer Timetable](https://github.com/haffi96/prayer-automate-ha), a custom Home Assistant integration that reads the PDF directly and turns it into sensors.
+
+### What it does
+
+Upload a timetable PDF and the integration creates:
+
+- **Fajr, Dhuhr, Asr, Maghrib and Isha**: timestamp sensors for today
+- **Next prayer**: the name of the next prayer today
+- **Next prayer time**: a timestamp sensor for the next prayer today
+- **Rows parsed**: a diagnostic count, useful for checking the PDF was read properly
+
+It also exposes a `prayer_timetable.export_csv` action that dumps every parsed row to a CSV:
+
+```csv
+date,fajr,dhuhr,asr,maghrib,isha
+```
+
+### Parsing PDFs that all look different
+
+This is where most of the work went. I tested against real timetables from two different mosques, and they have nothing in common besides containing five times per day. The extractor uses [pdfplumber](https://github.com/jsvine/pdfplumber) and tries two strategies:
+
+```
+1. Table extraction: find a header row that names the prayers,
+   map column index -> prayer, then read each row
+2. Text line extraction: read each line of text, find a day and
+   the times that follow it
+```
+
+It runs both and keeps whichever finds more distinct days. Neither strategy works for every PDF, but between them they cover the timetables I've tried.
+
+A few things that came up along the way:
+
+#### Prayer name spellings
+
+Headers aren't consistent: Zuhr, Dhuhr, Dhur, Zuhur, Esha, Isha, Subh… Headers are normalised through an alias map:
+
+```python
+PRAYER_ALIASES = {
+    "fajr": "fajr", "fajar": "fajr", "subh": "fajr",
+    "dhuhr": "dhuhr", "zuhr": "dhuhr", "zuhur": "dhuhr", "dhur": "dhuhr",
+    "asr": "asr",
+    "maghrib": "maghrib", "magrib": "maghrib",
+    "isha": "isha", "ishaa": "isha", "esha": "isha",
+}
+```
+
+#### 12-hour times with no AM/PM
+
+Most timetables print `1:15` for Dhuhr and `7:45` for Isha. Since the prayer order is fixed, anything after Fajr with an hour below 12 is shifted into the afternoon:
+
+```python
+if prayer in {"dhuhr", "asr", "maghrib", "isha"} and hour < 12:
+    hour += 12
+```
+
+#### Rows with only a day number
+
+Lots of timetables just print `1, 2, 3...` with the month in a title somewhere. The extractor looks for text like `March 2026` in the first couple of pages. If there's only a month, it works out the year from the weekday columns: it tries every year from 2020 to 2035 and keeps the one where `Mon 3`, `Tue 4` and so on actually fall on those weekdays.
+
+```python
+for year in range(2020, 2036):
+    for weekday, day in weekday_days:
+        if date(year, month, day).weekday() == weekday:
+            scores[year] += 1
+```
+
+If that still fails, you can set the year and month yourself in the config flow, along with a custom `strptime` date format for unusual date strings.
+
+#### Begins vs Jamaat columns
+
+Some timetables list both the start time and the congregation (jamaat) time for each prayer, so a row can have anywhere from 5 to 9+ times. The text parser picks the right columns based on how many times it finds on the line. It also handles timetables where Isha jamaat is a single fixed time repeated on every row.
+
+### Wiring it into Home Assistant
+
+The integration is a standard `DataUpdateCoordinator`. It re-parses the PDF every hour, looks up today's row, and converts the times into timezone-aware datetimes. The parsing runs in an executor job so pdfplumber doesn't block the event loop.
+
+The config flow uses Home Assistant's `file_upload` component, so you can upload the PDF from the browser. It gets copied to `/config/prayer_timetable/`. This mattered more than I expected: most people run Home Assistant in a container, so a path like `/home/me/timetable.pdf` on the host doesn't exist from Home Assistant's point of view.
+
+### Playing the adhan
+
+With the sensors in place, the automation is small. This one plays the adhan on a Nest speaker whenever the clock matches the next prayer time:
+
+```yaml
+alias: Next adhan time
+triggers:
+  - trigger: template
+    value_template: >-
+      {% set next_prayer_time =
+      as_timestamp(states("sensor.prayer_timetable_next_prayer_time")) |
+      timestamp_custom("%H:%M", True) %}
+      {{ states("sensor.time") == next_prayer_time }}
+actions:
+  - action: media_player.play_media
+    data:
+      media:
+        media_content_id: media-source://media_source/local/azan-short.mp3
+        media_content_type: audio/mpeg
+    target:
+      entity_id: media_player.living_room_speaker
+mode: single
+```
+
+Swap `next_prayer_time` for `sensor.prayer_timetable_maghrib` if you only want Maghrib.
+
+### Publishing through HACS
+
+To make it installable through [HACS](https://hacs.xyz), the repo needs a `hacs.json`, a `manifest.json` with a version and requirements (`pdfplumber` here), and brand icons. Two GitHub Actions run on every push and nightly:
+
+- **hassfest**: Home Assistant's own validator for manifests, translations and services
+- **HACS action**: checks the repo meets HACS requirements
+
+```yaml
+- name: HACS validation
+  uses: hacs/action@main
+  with:
+    category: integration
+```
+
+### Installing it
+
+1. In HACS, open the menu → **Custom repositories** and add `https://github.com/haffi96/prayer-automate-ha` as an **Integration**
+2. Download **Prayer Timetable** and restart Home Assistant
+3. **Settings → Devices & services → Add integration → Prayer Timetable**, then upload your mosque's PDF
+
+The repo also has a standalone CLI if you just want a CSV:
+
+```bash
+uv run prayer-extract timetable.pdf prayer-times.csv --year 2026 --month March
+```
+
+If your mosque's timetable doesn't parse, [open an issue](https://github.com/haffi96/prayer-automate-ha/issues). More PDF formats make the parser better.

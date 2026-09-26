@@ -21,7 +21,7 @@ function ProjectsPage() {
           level={1}
           kicker="Side quests"
           title="Projects"
-          blurb="Weekend builds, SaaS experiments and one very scrappy fighting game. None of them have an on-call rota, which is exactly how I like my hobbies."
+          blurb="Weekend builds, SaaS experiments, AI agents and one very serious network TUI. None of them have an on-call rota, which is exactly how I like my hobbies."
           action={
             <a href={profile.links.github} className="btn-3d btn-plain">
               <GitHubIcon /> More on GitHub

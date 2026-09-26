@@ -47,9 +47,11 @@ export function ProjectCard({ project, priority = false }: Readonly<{ project: C
               Live demo
             </a>
           ) : null}
-          <a href={project.data.githublink1} className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-ink">
-            <GitHubIcon className="size-3.5" /> Code
-          </a>
+          {project.data.githublink1 ? (
+            <a href={project.data.githublink1} className="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-ink">
+              <GitHubIcon className="size-3.5" /> Code
+            </a>
+          ) : null}
         </div>
       </div>
     </article>

@@ -1,0 +1,11 @@
+---
+rank: 3
+preview: "../../media/lazyiperf.gif"
+title: lazyiperf - network testing TUI
+techstack: ( Go, Bubble Tea, TCP, UDP, ICMP ) =>
+githublink1: https://github.com/haffi96/lazyiperf
+---
+
+A standalone network testing CLI and terminal dashboard for macOS and Linux, inspired by lazygit and lazydocker.
+
+Run `lazyiperf` and a setup wizard walks you through protocol, mode, target and settings, then opens a live dashboard with metrics, a history graph and a scrolling event log. It supports ICMP probes plus TCP and UDP probes and load tests, measuring RTT, throughput, loss, jitter and reordering. Networking is implemented natively in Go, so no `ping`, `iperf3` or `hping3` is needed, and every wizard option is also available as a CLI flag. It installs with a single curl command that verifies release checksums.
