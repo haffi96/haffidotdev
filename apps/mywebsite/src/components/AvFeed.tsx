@@ -9,7 +9,8 @@ import { Window } from "./Window";
  *
  * SSR renders a static "awaiting signal" state; everything live starts after mount, so
  * there is nothing to mismatch during hydration. The animation pauses off-screen and in
- * hidden tabs, and reduced-motion visitors get a single still frame.
+ * hidden tabs. Reduced-motion visitors start on a single still frame and can press play;
+ * everyone else autoplays and can pause.
  */
 
 type LinkId = "fibre" | "4g" | "starlink";
@@ -72,6 +73,10 @@ type Stats = { g2g: number; rtt: number; jitter: number; bitrate: number; fps: n
 
 const HISTORY = 48;
 
+// The feed is "720p30", so render at 30fps. Without a cap, rAF follows the display refresh
+// rate, which is 120Hz+ on many desktop monitors (mobile Safari stops at 60).
+const FRAME_MS = 1000 / 30;
+
 // Canvas palette: site accent colours on a navy "screen" that stays dark in both themes.
 const SAND = "238, 239, 233";
 const YELLOW = "247, 165, 1";
@@ -122,14 +127,27 @@ const PLACEHOLDER_HISTORY = (() => {
 
 export function AvFeed() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const screenRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const timecodeRef = useRef<HTMLSpanElement>(null);
   const glitchRef = useRef(0);
+  const statsRef = useRef<Stats | null>(null);
+  // Scene position lives outside the render effect so pausing and resuming doesn't rewind the drive.
+  // Start a little way down the road so the still frame looks mid-drive.
+  const sceneRef = useRef({ distance: 7, oncomingZ: 26 });
   const startRef = useRef(0);
 
   const inView = useInView(rootRef);
+  // Stricter check for the one-off handshake. On desktop the feed peeks above the fold, so the
+  // loose check above would play the whole sequence before anyone has scrolled down to watch it.
+  const screenSeen = useInView(screenRef, "0px", 0.5);
   const pageVisible = usePageVisible();
   const reducedMotion = useReducedMotion();
+  // null until the visitor presses play/pause, then their choice wins over the OS setting.
+  const [playChoice, setPlayChoice] = useState<boolean | null>(null);
+  const animate = playChoice ?? !reducedMotion;
+  const animateRef = useRef(animate);
+  animateRef.current = animate;
   const running = inView && pageVisible;
 
   const [mounted, setMounted] = useState(false);
@@ -147,19 +165,20 @@ export function AvFeed() {
     setMounted(true);
   }, []);
 
-  // Handshake sequence: runs once the feed is first on screen, and again whenever the link changes.
+  // Handshake sequence: runs once at least half the screen is visible, and again whenever the link changes.
   const [armed, setArmed] = useState(false);
   useEffect(() => {
-    if (mounted && inView) {
+    if (mounted && screenSeen) {
       setArmed(true);
     }
-  }, [mounted, inView]);
+  }, [mounted, screenSeen]);
 
   useEffect(() => {
     if (!armed) {
       return;
     }
-    if (reducedMotion) {
+    // Read through a ref so play/pause doesn't replay the handshake.
+    if (!animateRef.current) {
       setStep(steps.length);
       return;
     }
@@ -173,31 +192,33 @@ export function AvFeed() {
       }
     }, 380);
     return () => window.clearInterval(id);
-  }, [armed, link, reducedMotion, steps.length]);
+  }, [armed, link, steps.length]);
 
   // Telemetry ticks every 500ms. Paused off-screen, in hidden tabs and before the link is live.
-  // Reduced motion gets a single reading instead of a ticking one.
+  // When paused, the last reading holds (or a single one is taken if there is none yet).
   useEffect(() => {
-    if (!live || (!running && !reducedMotion)) {
+    if (!live || (!running && animate)) {
       return;
     }
-    let previous: Stats | null = null;
     const tick = () => {
-      const { stats: next, spike } = nextStats(previous, profile);
-      previous = next;
+      const { stats: next, spike } = nextStats(statsRef.current, profile);
+      statsRef.current = next;
       if (spike) {
         glitchRef.current = performance.now();
       }
       setStats(next);
       setHistory((current) => [...current.slice(1), next.g2g]);
     };
-    tick();
-    if (reducedMotion) {
+    if (!animate) {
+      if (!statsRef.current) {
+        tick();
+      }
       return;
     }
+    tick();
     const id = window.setInterval(tick, 500);
     return () => window.clearInterval(id);
-  }, [live, running, profile, reducedMotion]);
+  }, [live, running, profile, animate]);
 
   // Canvas renderer.
   useEffect(() => {
@@ -228,18 +249,17 @@ export function AvFeed() {
 
     let frame = 0;
     let last = performance.now();
-    // Start a little way down the road so the still (reduced-motion) frame looks mid-drive.
-    let distance = 7;
-    let oncomingZ = 26;
+    const scene = sceneRef.current;
 
     const draw = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      distance += dt * 13;
-      oncomingZ -= dt * 24;
-      if (oncomingZ < 1.5) {
-        oncomingZ = 70 + Math.random() * 40;
+      scene.distance += dt * 13;
+      scene.oncomingZ -= dt * 24;
+      if (scene.oncomingZ < 1.5) {
+        scene.oncomingZ = 70 + Math.random() * 40;
       }
+      const { distance, oncomingZ } = scene;
 
       const t = (now - startRef.current) / 1000;
       const horizon = height * 0.4;
@@ -256,15 +276,27 @@ export function AvFeed() {
       context.fillStyle = sky;
       context.fillRect(0, 0, width, horizon);
 
+      // Point clouds are batched into one path per colour/alpha and filled once. Thousands of
+      // individual fillRect calls with fresh rgba() strings were the bulk of each frame's cost.
+      const fillPoints = (rgb: string, alpha: number, addPoints: () => void) => {
+        context.beginPath();
+        addPoints();
+        context.globalAlpha = alpha;
+        context.fillStyle = `rgb(${rgb})`;
+        context.fill();
+        context.globalAlpha = 1;
+      };
+
       // Distant skyline as sparse point columns.
-      for (const building of skyline) {
-        const base = project(building.x, 0, 80);
-        const top = project(building.x, building.h, 80);
-        context.fillStyle = `rgba(${BLUE}, 0.3)`;
-        for (let y = base.y; y > top.y; y -= 3) {
-          context.fillRect(base.x, y, 1, 1);
+      fillPoints(BLUE, 0.3, () => {
+        for (const building of skyline) {
+          const base = project(building.x, 0, 80);
+          const top = project(building.x, building.h, 80);
+          for (let y = base.y; y > top.y; y -= 3) {
+            context.rect(base.x, y, 1, 1);
+          }
         }
-      }
+      });
 
       context.strokeStyle = `rgba(${SAND}, 0.3)`;
       context.lineWidth = 1;
@@ -283,15 +315,20 @@ export function AvFeed() {
         }
         const alpha = clamp(1 - z / 62, 0, 1) * 0.7;
         const size = clamp(2.2 - z / 22, 0.8, 2.2);
-        for (let x = -12; x <= 12; x += 0.6) {
-          const onRoad = x > -5.6 && x < 2;
-          const p = project(x, 0, z);
-          if (p.x < -2 || p.x > width + 2 || p.y > height + 2) {
-            continue;
+        const addRow = (onRoad: boolean) => () => {
+          for (let x = -12; x <= 12; x += 0.6) {
+            if ((x > -5.6 && x < 2) !== onRoad) {
+              continue;
+            }
+            const p = project(x, 0, z);
+            if (p.x < -2 || p.x > width + 2 || p.y > height + 2) {
+              continue;
+            }
+            context.rect(p.x, p.y, size, size);
           }
-          context.fillStyle = onRoad ? `rgba(${SAND}, ${alpha * 0.4})` : `rgba(${SAND}, ${alpha})`;
-          context.fillRect(p.x, p.y, size, size);
-        }
+        };
+        fillPoints(SAND, alpha, addRow(false));
+        fillPoints(SAND, alpha * 0.4, addRow(true));
       }
 
       // Lane markings.
@@ -333,13 +370,14 @@ export function AvFeed() {
         if (z < 1.6 || z > 48) {
           continue;
         }
-        for (const side of [4.2, -8]) {
-          context.fillStyle = `rgba(${SAND}, ${clamp(1 - z / 70, 0, 1) * 0.8})`;
-          for (let y = 0; y < 4.5; y += 0.28) {
-            const p = project(side, y, z);
-            context.fillRect(p.x, p.y, 1.4, 1.4);
+        fillPoints(SAND, clamp(1 - z / 70, 0, 1) * 0.8, () => {
+          for (const side of [4.2, -8]) {
+            for (let y = 0; y < 4.5; y += 0.28) {
+              const p = project(side, y, z);
+              context.rect(p.x, p.y, 1.4, 1.4);
+            }
           }
-        }
+        });
       }
 
       // Tracked objects: lead vehicle and oncoming traffic.
@@ -353,13 +391,14 @@ export function AvFeed() {
         const h = bl.y - tr.y;
         context.fillStyle = `rgba(${SAND}, 0.06)`;
         context.fillRect(bl.x, tr.y, w, h);
-        context.fillStyle = `rgba(${SAND}, 0.55)`;
         const stepPx = Math.max(2, w / 10);
-        for (let px = bl.x; px <= tr.x; px += stepPx) {
-          for (let py = tr.y; py <= bl.y; py += stepPx) {
-            context.fillRect(px, py, 1, 1);
+        fillPoints(SAND, 0.55, () => {
+          for (let px = bl.x; px <= tr.x; px += stepPx) {
+            for (let py = tr.y; py <= bl.y; py += stepPx) {
+              context.rect(px, py, 1, 1);
+            }
           }
-        }
+        });
         const pad = 4;
         const c = Math.max(4, Math.min(10, w * 0.25));
         const x0 = bl.x - pad;
@@ -413,14 +452,20 @@ export function AvFeed() {
     });
     observer.observe(canvas);
 
-    if (!running || reducedMotion) {
+    if (!running || !animate) {
       draw(performance.now());
       return () => observer.disconnect();
     }
 
+    let lastDraw = 0;
     const loop = (now: number) => {
-      draw(now);
       frame = window.requestAnimationFrame(loop);
+      // Small tolerance so a 60Hz display reliably draws every other frame.
+      if (now - lastDraw < FRAME_MS - 2) {
+        return;
+      }
+      lastDraw = now;
+      draw(now);
     };
     frame = window.requestAnimationFrame(loop);
 
@@ -428,7 +473,7 @@ export function AvFeed() {
       window.cancelAnimationFrame(frame);
       observer.disconnect();
     };
-  }, [mounted, running, reducedMotion]);
+  }, [mounted, running, animate]);
 
   const fmt = (value: number | undefined, digits = 0) => (value === undefined || !live ? "--" : value.toFixed(digits));
   const readouts = [
@@ -444,7 +489,7 @@ export function AvFeed() {
     <Window title="av_feed.exe" accent="green" bodyClassName="p-0" labelledBy="feed-heading">
       <div ref={rootRef} className="grid lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
         {/* The "screen". Stays dark in both themes, like a real monitor. */}
-        <div className="relative aspect-[16/11] min-w-0 overflow-hidden border-b-[1.5px] border-edge bg-[#1d1f27] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[400px] lg:border-r-[1.5px] lg:border-b-0 dark:bg-[#111218]">
+        <div ref={screenRef} className="relative aspect-[16/11] min-w-0 overflow-hidden border-b-[1.5px] border-edge bg-[#1d1f27] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[400px] lg:border-r-[1.5px] lg:border-b-0 dark:bg-[#111218]">
           <canvas
             ref={canvasRef}
             className="absolute inset-0 size-full"
@@ -487,7 +532,17 @@ export function AvFeed() {
                 <span className="ml-1 text-xs font-normal text-[#c9cbc0]">ms</span>
               </p>
             </div>
-            <p className="rounded bg-black/60 px-1.5 py-0.5 font-mono text-[10px] tracking-wider text-[#c9cbc0] uppercase">WebRTC · UDP</p>
+            <div className="flex items-center gap-1.5">
+              <p className="rounded bg-black/60 px-1.5 py-0.5 font-mono text-[10px] tracking-wider text-[#c9cbc0] uppercase">WebRTC · UDP</p>
+              <button
+                type="button"
+                onClick={() => setPlayChoice(!animate)}
+                aria-label={animate ? "Pause feed" : "Play feed"}
+                className="pointer-events-auto rounded bg-black/60 px-1.5 py-0.5 font-mono text-[10px] tracking-wider text-[#eeefe9] uppercase hover:bg-black/80 focus-visible:outline-2 focus-visible:outline-hm-yellow"
+              >
+                {animate ? "❚❚ Pause" : "▶ Play"}
+              </button>
+            </div>
           </div>
 
           {!live ? (
@@ -528,7 +583,10 @@ export function AvFeed() {
                   key={id}
                   type="button"
                   aria-pressed={link === id}
-                  onClick={() => setLink(id)}
+                  onClick={() => {
+                    statsRef.current = null;
+                    setLink(id);
+                  }}
                   className={`btn-3d px-2.5 py-1 font-mono text-[0.7rem] tracking-wider uppercase ${link === id ? "btn-orange" : "btn-plain"}`}
                 >
                   {LINKS[id].label}

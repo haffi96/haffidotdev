@@ -17,8 +17,11 @@ export function useReducedMotion() {
   );
 }
 
-/** True while the element is (roughly) on screen. Starts false so SSR and first paint match. */
-export function useInView(ref: RefObject<Element | null>, rootMargin = "80px") {
+/**
+ * True while the element is (roughly) on screen. Starts false so SSR and first paint match.
+ * Pass a threshold to require that fraction of the element to be visible.
+ */
+export function useInView(ref: RefObject<Element | null>, rootMargin = "80px", threshold = 0) {
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
@@ -31,10 +34,10 @@ export function useInView(ref: RefObject<Element | null>, rootMargin = "80px") {
       if (entry) {
         setInView(entry.isIntersecting);
       }
-    }, { rootMargin });
+    }, { rootMargin, threshold });
     observer.observe(element);
     return () => observer.disconnect();
-  }, [ref, rootMargin]);
+  }, [ref, rootMargin, threshold]);
 
   return inView;
 }
